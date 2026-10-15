@@ -44,8 +44,8 @@ layers:
   - '='
   - '-'
   - KP PLUS
-  - Sft+{
-  - Sft+}
+  - '{'
+  - '}'
   - '&oled_toggle'
   - '&oled_toggle'
   - '{'
