@@ -17,7 +17,7 @@
 
 #define DT_DRV_COMPAT zmk_behavior_oled_toggle
 
-#if IS_ENABLED(CONFIG_DISPLAY)
+#ifdef CONFIG_DISPLAY
 
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
