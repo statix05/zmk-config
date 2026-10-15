@@ -6,4 +6,23 @@ config ZMK_BEHAVIOR_OLED_TOGGLE
     bool "Behavior to toggle the local half's OLED display"
     default y
 
+config SOFLE_STATUS_SCREEN
+    bool "Minimal static status screen for classic Sofle SSD1306"
+    depends on ZMK_DISPLAY && (SHIELD_SOFLE_LEFT || SHIELD_SOFLE_RIGHT)
+    select LV_USE_IMG
+    select LV_USE_THEME_MONO
+    default n
+
+config SOFLE_STATUS_BATTERY_SETTLE_MS
+    int "Wait after USB removal before accepting a local battery estimate"
+    depends on SOFLE_STATUS_SCREEN
+    default 3000
+    range 1000 30000
+
+config SOFLE_STATUS_BATTERY_INTERVAL_MS
+    int "Local OLED battery sampling interval while active on battery"
+    depends on SOFLE_STATUS_SCREEN
+    default 60000
+    range 10000 300000
+
 endmenu

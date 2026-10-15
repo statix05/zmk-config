@@ -1,0 +1,52 @@
+{
+  "states_tested": 384,
+  "rotation": "clockwise, 32x128 -> 128x32",
+  "guard_bytes": "passed",
+  "logo_overwrite": "none",
+  "region_intersection": "none",
+  "usb_battery_mask": "passed",
+  "regions": {
+    "logo": [
+      0,
+      0,
+      32,
+      32
+    ],
+    "power": [
+      0,
+      40,
+      32,
+      47
+    ],
+    "battery": [
+      0,
+      50,
+      32,
+      57
+    ],
+    "transport": [
+      0,
+      70,
+      32,
+      77
+    ],
+    "connection": [
+      0,
+      82,
+      32,
+      89
+    ],
+    "layer_label": [
+      0,
+      100,
+      32,
+      107
+    ],
+    "layer_value": [
+      0,
+      112,
+      32,
+      119
+    ]
+  }
+}
