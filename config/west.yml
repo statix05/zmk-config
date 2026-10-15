@@ -20,10 +20,10 @@ manifest:
       remote: cormoran
       revision: 4493783ef88ce2e653bf8217c92ee17140df71e3
       import: app/west.yml
-    # Same current protocol/storage as cormoran, one Kconfig syntax backport.
+    # Same protocol/storage as cormoran, Kconfig/linker syntax backports only.
     - name: zmk-feature-custom-settings
       remote: statix05
-      revision: 1229f8aaa163778471f832e9cae5931b5e4d8c7c
+      revision: a638e9ff962f12b45f68ed84fed3629dba3ac397
     - name: zmk-feature-runtime-macro
       remote: cormoran
       revision: 38530962eb7061b60efcb98e84585cfb1f0cb6de

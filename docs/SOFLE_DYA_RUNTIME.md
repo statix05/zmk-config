@@ -10,9 +10,10 @@ This version adds the actual custom-RPC subsystems used by DYA Studio.
 - Core Studio messages:89b81d2e587fce807b668dff2a6967a40beef421 (imported by that core).
 - runtime-macro:38530962eb7061b60efcb98e84585cfb1f0cb6de
 - runtime-combo:d9490e7b5d41c516221d131241009e81740efcee
-- custom-settings:statix05 fork1229f8aaa163778471f832e9cae5931b5e4d8c7c,
-  based on cormoran c6a7fef3a3be3d3ace5de9a4b0628c6418cd1f3f. Only Kconfig
-  configdefault MAIN_STACK_SIZE is changed to backwards-compatible config syntax.
+- custom-settings:statix05 forka638e9ff962f12b45f68ed84fed3629dba3ac397,
+  based on cormoran c6a7fef3a3be3d3ace5de9a4b0628c6418cd1f3f. Two compatibility
+  changes: configdefault MAIN_STACK_SIZE becomes config; ROM_SECTIONS linker
+  insertion becomes SECTIONS (retaining ITERABLE_SECTION_ROM descriptors).
   Protocol, keyspace implementation and macro storage are unchanged.
 - settings-rpc:78f86df9e6c5edaf57bef3ccbd7f360cfdf49291
 - ble-management:851661cd21f2aded8ec649da86e01a207dc4b973
