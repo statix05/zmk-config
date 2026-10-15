@@ -1,6 +1,6 @@
-mainmenu "ZMK OLED Toggle"
+mainmenu "ZMK config root module"
 
-menu "ZMK OLED Toggle"
+menu "Sofle local modules"
 
 config ZMK_BEHAVIOR_OLED_TOGGLE
     bool "Behavior to toggle the local half's OLED display"

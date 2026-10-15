@@ -1,4 +1,0 @@
-# Local ZMK module: independent OLED on/off toggle per half.
-build:
-  cmake: .
-  kconfig: Kconfig
