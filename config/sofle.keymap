@@ -44,15 +44,22 @@
  * with 80 ms between the clicks. Nothing is left held afterwards; holding the
  * button does not repeat the macro (it runs once per press). Timings:
  * tap-ms = 20 (click duration), wait-ms = 80 (gap between clicks). */
-ZMK_MACRO(dbl_click,
-    compatible = "zmk,behavior-macro";
-    #binding-cells = <0>;
-    tap-ms = <20>;
-    wait-ms = <80>;
-    bindings = <&macro_tap_time 20 &macro_wait_time 80 &macro_tap &mkp MB1 &mkp MB1>;
-)
-
 / {
+    behaviors {
+        /* Double left mouse click: one physical press of the right encoder
+         * button sends exactly two full clicks (each = press + release, 20 ms
+         * button-down), with 80 ms between the clicks. Nothing is left held
+         * afterwards; holding the button does not repeat the macro (it runs
+         * once per press). Timings: tap-ms (click duration), wait-ms (gap). */
+        dbl_click: dbl_click {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            tap-ms = <20>;
+            wait-ms = <80>;
+            bindings = <&macro_tap_time 20 &macro_wait_time 80 &macro_tap &mkp MB1 &mkp MB1>;
+        };
+    };
+
     keymap {
         compatible = "zmk,keymap";
 
