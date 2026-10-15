@@ -3,16 +3,15 @@
  *
  * SPDX-License-Identifier: MIT
  *
- * PandaKB Sofle v1 MX. This is the keymap actually used by the build
- * (ZMK picks config/sofle.keymap from ZMK_CONFIG), layers:
- *   0 = BASE, 1 = AUX1 (LOW), 2 = AUX2 (RAI).
+ * PandaKB Sofle v1 MX. Layers (0..2): BAS, AUX1, RAI. Matches the keymap the
+ * owner configured via DYA Studio (see Desktop screenshots), so a settings
+ * reset before flashing is safe: the static keymap IS the current layout.
  *
- * Encoders (same rotation on all layers):
- *   left:  CW = volume up, CCW = volume down, push = mute
- *   right: CW = down arrow, CCW = up arrow (plain key presses, NOT mouse scroll),
- *          push = double left mouse click
- * On AUX1 the encoder pushes toggle each half's own OLED (left push -> left
- * screen, right push -> right screen, independent; no mute / double click).
+ * Encoders (same rotation on all layers; LEFT inverted for the reversed PCB:
+ * CW = volume up requires swapping inc/dec params):
+ *   left:  CW = volume up, CCW = volume down, push = LALT (BASE), OLED toggle (AUX1), none (RAI)
+ *   right: CW = down arrow, CCW = up arrow, push = double LMB click (BASE),
+ *          OLED toggle (AUX1), none (RAI)
  *
  * Encoder pushes live on matrix positions RC(4,5) (left half) and RC(4,6)
  * (right half) — the two slots flanking the center in the row-4 transform.
@@ -36,9 +35,8 @@
             #binding-cells = <0>;
             display-name = "OLED Toggle";
         };
-    };
-};
 
+<<<<<<< HEAD
 /* Double left mouse click: one physical press of the right encoder button
  * sends exactly two full clicks (each = press + release, 20 ms button-down),
  * with 80 ms between the clicks. Nothing is left held afterwards; holding the
@@ -47,6 +45,8 @@
 
 / {
     behaviors {
+=======
+>>>>>>> 159af12 (Sofle: match DYA-Studio keymap (BAS push=LALT, AUX1/RAI full), invert left encoder rotation)
         /* Double left mouse click: one physical press of the right encoder
          * button sends exactly two full clicks (each = press + release, 20 ms
          * button-down), with 80 ms between the clicks. Nothing is left held
@@ -83,14 +83,26 @@
             //               |  [  | CTRL | ALT  | CMD  | SPACE  |  | ENTER | SHIFT |  M1  |  M2  |   ]   |
 
             bindings = <
+<<<<<<< HEAD
 &kp GRAVE  &kp N1  &kp N2    &kp N3     &kp N4    &kp N5                              &kp N6     &kp N7  &kp N8     &kp N9             &kp N0    &kp MINUS
 &kp ESC    &kp Q   &kp W     &kp E      &kp R     &kp T                               &kp Y      &kp U   &kp I      &kp O              &kp P     &kp BSPC
 &kp TAB    &kp A   &kp S     &kp D      &kp F     &kp G                               &kp H      &kp J   &kp K      &kp L              &kp SEMI  &kp SQT
 &kp LSHFT  &kp Z   &kp X     &kp C      &kp V     &kp B     &kp C_MUTE    &dbl_click  &kp N      &kp M   &kp COMMA  &kp DOT            &kp FSLH  &kp BSLH
                    &kp LBKT  &kp LCTRL  &kp LALT  &kp LGUI  &kp SPACE     &kp RET     &kp RSHFT  &mo 1   &mo 2      &kp RIGHT_BRACKET
+=======
+&kp GRAVE  &kp N1  &kp N2    &kp N3    &kp N4     &kp N5                                   &kp N6  &kp N7     &kp N8     &kp N9    &kp N0    &kp MINUS
+&kp ESC    &kp Q   &kp W     &kp E     &kp R      &kp T                                    &kp Y   &kp U      &kp I      &kp O     &kp P     &kp BSPC
+&kp TAB    &kp A   &kp S     &kp D     &kp F      &kp G                                    &kp H   &kp J      &kp K      &kp L     &kp SEMI  &kp SQT
+&kp LSHFT  &kp Z   &kp X     &kp C     &kp V      &kp B   &kp LALT      &dbl_click  &kp N   &kp M      &kp COMMA  &kp DOT   &kp FSLH  &kp BSLH
+                   &kp LBRC  &kp LCTRL  &kp LALT  &kp LGUI  &kp SPACE    &kp RET  &kp RSHFT    &mo 1    &mo 2      &kp RBRC
+>>>>>>> 159af12 (Sofle: match DYA-Studio keymap (BAS push=LALT, AUX1/RAI full), invert left encoder rotation)
             >;
 
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp DOWN UP>;
+            /* LEFT encoder inverted: on this PCB CW reads as CCW, so the
+             * inc/dec params are swapped (CW = first param = C_VOL_DN here
+             * would sound DOWN... this swap restores CW = volume UP).
+             * RIGHT encoder works correctly: CW = DOWN arrow. */
+            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp DOWN UP>;
         };
 
         lower_layer {
@@ -99,43 +111,55 @@
             // Rotation same as BASE. Encoder pushes toggle the OLEDs:
             // left push -> left screen, right push -> right screen (independent).
             // ------------------------------------------------------------------------------------------------------------
-            // | `     |  F1 |  F2 |  F3  |  F4  |  F5  |                   |  F6  |  F7   |  F8   |  F9  |  F10  |  F11  |
-            // | RAISE |   1 |   2 |  3   |   4  |   5  |                   |   6  |   7   |   8   |   9  |    0  |  F12  |
-            // |       |  !  |  @  |  #   |  $   |  %   |                   |  ^   |  &    |  *    |  (   |   )   |   |   |
-            // |       |  =  |  -  |  +   |  {   |  }   | OLED-L  |  | OLED-R |  [   |  ]    |  ;    |  :   |   \   |       |
+            // |  `    |  F1 |  F2 |  F3  |  F4  |  F5  |                   |  F6  |  F7   |  F8   |  F9  |  F10  |  F11  |
+            // | MO 2  |  1  |  2  |  3   |  4   |  5   |                   |  6   |  7    |  8    |  9   |   0   |  F12  |
+            // |       |  !  |  @  |  #   |  $   |  %   |                   | <-  |  v    |  ^    |  ->  | ⌘->   |   |   |
+            // |       |  =  |  -  |  KP+ |  {   |  }   | OLED-L  |  | OLED-R |  [   |  ]    |  ;    |  :   |   \   |       |
             //               |     |      |      |      |        |  |       |      |       |       |      |
 
             bindings = <
+<<<<<<< HEAD
 &kp GRAVE  &kp F1     &kp F2     &kp F3       &kp F4    &kp F5                                   &kp F6     &kp F7    &kp F8           &kp F9     &kp F10   &kp F11
 &mo 2      &kp N1     &kp N2     &kp N3       &kp N4    &kp N5                                   &kp N6     &kp N7    &kp N8           &kp N9     &kp N0    &kp F12
 &trans     &kp EXCL   &kp AT     &kp HASH     &kp DLLR  &kp PRCNT                                &kp CARET  &kp AMPS  &kp KP_MULTIPLY  &kp LPAR   &kp RPAR  &kp PIPE
 &trans     &kp EQUAL  &kp MINUS  &kp KP_PLUS  &kp LBRC  &kp RBRC   &oled_toggle    &oled_toggle  &kp LBKT   &kp RBKT  &kp SEMI         &kp COLON  &kp BSLH  &trans
                       &trans     &trans       &trans    &trans     &trans          &trans        &trans     &trans    &trans           &trans
+=======
+&kp GRAVE  &kp F1     &kp F2     &kp F3       &kp F4    &kp F5                       &kp F6     &kp F7    &kp F8           &kp F9     &kp F10   &kp F11
+&mo 2      &kp N1     &kp N2     &kp N3       &kp N4    &kp N5                       &kp N6     &kp N7    &kp N8           &kp N9     &kp N0    &kp F12
+&none      &kp LS(N1) &kp LS(N2) &kp LS(N3)   &kp LS(N4) &kp LS(N5)                  &kp LEFT   &kp DOWN  &kp UP           &kp RIGHT  &kp LG(RIGHT) &kp LS(BSLH)
+&none      &kp EQUAL  &kp MINUS  &kp KP_PLUS  &kp LS(LBRC) &kp LS(RBRC) &oled_toggle &oled_toggle &kp LBRC &kp RBRC &kp SEMI &kp LS(SEMI) &kp BSLH &none
+                      &none      &none        &none     &none      &none    &none  &none      &none     &none    &none
+>>>>>>> 159af12 (Sofle: match DYA-Studio keymap (BAS push=LALT, AUX1/RAI full), invert left encoder rotation)
             >;
 
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp DOWN UP>;
+            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp DOWN UP>;
         };
 
         raise_layer {
             display-name = "RAI";
+<<<<<<< HEAD
 
             // Rotation same as BASE. Encoder pushes are transparent here.
+=======
+            // Rotation same as BASE. Encoder pushes are empty here.
+>>>>>>> 159af12 (Sofle: match DYA-Studio keymap (BAS push=LALT, AUX1/RAI full), invert left encoder rotation)
             // ------------------------------------------------------------------------------------------------------------
-            // |BTCLR| BT1  | BT2  |  BT3  |  BT4  |  BT5 |                |      |      |       |      |       |       |
-            // |     | INS  | PSCR | GUI   |       |      |                | PGUP |      |       |      |       |       |
-            // |     | ALT  | CTRL | SHIFT |       | CAPS |                |  <-  |   v  |   ^   |  ->  |  DEL  | BKSPC |
-            // |     | UNDO | CUT  | COPY  | PASTE |      |      |  |      |      |      |       |      |       |       |
-            //              |      |       |       |      |      |  |      |      |      |       |      |
+            // |BTCLR| BT0  | BT1  |  BT2  |  BT3  |  BT4 |                | KP-  |  KP7  |  KP8  | KP9  | 9(    | 0)    |
+            // |⌃␣   | INS  | PSCR | App   |       |      |                | KP+  |  KP4  |  KP5  | KP6  |  [{   | ]}    |
+            // |     | ESC  | CTRL | SHIFT |       | CAPS |                | KP*  |  KP1  |  KP2  | KP3  |  ,<   | .>    |
+            // |     | 0x7A | 0x7B | 0x7C  | 0x7D  |      |      |  |      | KP/  | Bksp  |  KP0  | Del  |  #    | ⌥\|   |
+            //               |      |       |       |      |      |  |ENTER | ⇧    | KP=   |       | Tab  |
 
             bindings = <
-&bt BT_CLR  &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4                    &trans     &trans    &trans  &trans     &trans   &trans
-&trans      &kp INS       &kp PSCRN     &kp K_CMENU   &trans        &trans                          &kp PG_UP  &trans    &trans  &trans     &kp N0   &trans
-&trans      &kp LALT      &kp LCTRL     &kp LSHFT     &trans        &kp CLCK                        &kp LEFT   &kp DOWN  &kp UP  &kp RIGHT  &kp DEL  &kp BSPC
-&trans      &kp K_UNDO    &kp K_CUT     &kp K_COPY    &kp K_PASTE   &trans        &trans    &trans  &trans     &trans    &trans  &trans     &trans   &trans
-                          &trans        &trans        &trans        &trans        &trans    &trans  &trans     &trans    &trans  &trans
+&bt BT_CLR  &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2   &bt BT_SEL 3  &bt BT_SEL 4                  &kp KP_MINUS  &kp KP_N7  &kp KP_N8   &kp KP_N9  &kp LS(N9) &kp LS(N0)
+&kp LC(SPACE) &kp INS     &kp PSCRN     &kp K_CMENU    &none         &none                         &kp KP_PLUS   &kp KP_N4  &kp KP_N5   &kp KP_N6  &kp LBRC   &kp RBRC
+&none       &kp ESC       &kp LCTRL     &kp LSHFT      &none         &kp CLCK                      &kp KP_ASTERISK &kp KP_N1 &kp KP_N2  &kp KP_N3  &kp COMMA  &kp DOT
+&none       &kp 0x7A      &kp 0x7B      &kp 0x7C       &kp 0x7D      &none         &none  &none    &kp KP_DIVIDE &kp BSPC   &kp KP_N0   &kp DEL    &kp LS(N3) &kp LS(LA(BSLH))
+                          &none         &none          &none         &none         &none  &kp RET  &kp RSHFT     &kp KP_EQUAL &none   &kp TAB
             >;
 
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp DOWN UP>;
+            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp DOWN UP>;
         };
     };
 };
