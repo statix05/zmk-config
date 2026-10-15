@@ -11,11 +11,37 @@ manifest:
     # fork of zmk-nice-oled with honest USB battery display
     - name: statix05
       url-base: https://github.com/statix05
+    - name: cormoran
+      url-base: https://github.com/cormoran
   projects:
+    # Custom Studio protocol + activity/BLE/split extensions, still Zephyr 3.5
+    # and LVGL 8. Pin the reviewed v0.3-branch+dya commit, not a moving branch.
     - name: zmk
-      remote: zmkfirmware
-      revision: v0.3.0
+      remote: cormoran
+      revision: 4493783ef88ce2e653bf8217c92ee17140df71e3
       import: app/west.yml
+    # Same current protocol/storage as cormoran, one Kconfig syntax backport.
+    - name: zmk-feature-custom-settings
+      remote: statix05
+      revision: 1229f8aaa163778471f832e9cae5931b5e4d8c7c
+    - name: zmk-feature-runtime-macro
+      remote: cormoran
+      revision: 38530962eb7061b60efcb98e84585cfb1f0cb6de
+      import: true
+    - name: zmk-feature-runtime-combo
+      remote: cormoran
+      revision: d9490e7b5d41c516221d131241009e81740efcee
+      import: true
+    - name: zmk-module-settings-rpc
+      remote: cormoran
+      revision: 78f86df9e6c5edaf57bef3ccbd7f360cfdf49291
+    # Last wire-compatible BLE module before ZMK v0.4 endpoint API rename.
+    - name: zmk-module-ble-management
+      remote: cormoran
+      revision: 851661cd21f2aded8ec649da86e01a207dc4b973
+    - name: zmk-module-battery-history
+      remote: cormoran
+      revision: 307755dd2ad4d320e14de162e8e5ef018f29d929
     # dongle_display
     - name: zmk-dongle-display
       remote: englmaxi

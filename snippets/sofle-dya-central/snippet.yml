@@ -1,0 +1,3 @@
+name: sofle-dya-central
+append:
+  EXTRA_CONF_FILE: sofle-dya-central.conf
