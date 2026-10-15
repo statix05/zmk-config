@@ -2,5 +2,6 @@ build:
   settings:
     board_root: .
     snippet_root: .
+    dts_root: .
   cmake: .
   kconfig: Kconfig

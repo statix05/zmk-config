@@ -17,6 +17,8 @@
 
 #define DT_DRV_COMPAT zmk_behavior_oled_toggle
 
+#if IS_ENABLED(CONFIG_DISPLAY)
+
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/display.h>
@@ -113,3 +115,5 @@ static const struct behavior_driver_api behavior_oled_toggle_driver_api = {
 
 BEHAVIOR_DT_INST_DEFINE(0, NULL, NULL, NULL, NULL, POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT,
                         &behavior_oled_toggle_driver_api);
+
+#endif /* IS_ENABLED(CONFIG_DISPLAY) */
