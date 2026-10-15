@@ -8,6 +8,9 @@ manifest:
     # nice_oled - nice_epaper - dongle_display!view - oled Adapter
     - name: mctechnology17
       url-base: https://github.com/mctechnology17
+    # fork of zmk-nice-oled with honest USB battery display
+    - name: statix05
+      url-base: https://github.com/statix05
   projects:
     - name: zmk
       remote: zmkfirmware
@@ -17,9 +20,9 @@ manifest:
     - name: zmk-dongle-display
       remote: englmaxi
       revision: v0.3
-    # nice_oled - nice_epaper
+    # nice_oled - nice_epaper (fork: honest USB battery display)
     - name: zmk-nice-oled
-      remote: mctechnology17
+      remote: statix05
       revision: main
     # dongle_display!view
     - name: zmk-dongle-display-view

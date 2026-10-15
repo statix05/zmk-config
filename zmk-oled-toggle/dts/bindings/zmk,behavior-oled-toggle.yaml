@@ -1,0 +1,5 @@
+description: Toggle the local half's OLED display on/off
+
+compatible: "zmk,behavior-oled-toggle"
+
+include: zero_param.yaml

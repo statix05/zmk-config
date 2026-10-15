@@ -70,6 +70,17 @@ RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(4,5) RC(4,6) RC(3,6) RC(3,7) 
         sensors = <&left_encoder &right_encoder>;
         triggers-per-rotation = <20>;
     };
+
+    behaviors {
+        /* Toggle the LOCAL half's OLED on/off (module zmk-oled-toggle).
+         * Runs on the half where the bound key physically lives, so the left
+         * encoder push toggles the left OLED and the right push the right one. */
+        oled_toggle: behavior_oled_toggle {
+            compatible = "zmk,behavior-oled-toggle";
+            #binding-cells = <0>;
+            display-name = "OLED Toggle";
+        };
+    };
 };
 
 &pro_micro_i2c {
