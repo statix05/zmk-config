@@ -9,6 +9,8 @@ import re
 import shutil
 import subprocess
 import sys
+import yaml
+from west.manifest import Manifest
 
 IMAGE = "zmkfirmware/zmk-build-arm@sha256:ca4978c179533772d3a77296bc628f8a3ae1ed75ee1cc8b411570f9810fd821e"
 
@@ -26,10 +28,23 @@ def main():
     args = ap.parse_args()
     out = args.build / "artifacts" / (args.name + "-metadata")
     out.mkdir(parents=True, exist_ok=True)
-    frozen = command(["west", "manifest", "--freeze"], args.base)
-    if frozen["returncode"]:
-        raise RuntimeError(frozen["stderr"])
-    (out / "frozen-west.yml").write_text(frozen["stdout"] + "\n")
+    manifest = Manifest(topdir=args.base)
+    resolved = manifest.as_dict()
+    active = {p.name: p for p in manifest.projects
+              if p.name != "manifest" and manifest.is_active(p)}
+    frozen_projects = []
+    inactive = []
+    for record in resolved["manifest"]["projects"]:
+        project = active.get(record["name"])
+        if project is None:
+            inactive.append(record["name"])
+            continue
+        if not project.is_cloned():
+            raise RuntimeError("Active west project is not cloned: " + project.name)
+        record["revision"] = project.sha("HEAD")
+        frozen_projects.append(record)
+    resolved["manifest"]["projects"] = frozen_projects
+    (out / "frozen-west.yml").write_text(yaml.safe_dump(resolved, sort_keys=False))
     cache = args.build / "CMakeCache.txt"
     compiler = None
     if cache.exists():
@@ -42,10 +57,13 @@ def main():
             v = sdk / "sdk_version"
             sdk_versions[str(sdk)] = v.read_text().strip() if v.exists() else sdk.name
     meta = {"source_commit": os.environ.get("GITHUB_SHA"), "artifact": args.name,
-            "container_image": IMAGE, "python": sys.version, "sdk": sdk_versions,
+            "container_image": IMAGE if os.environ.get("GITHUB_ACTIONS") == "true" else None,
+            "configured_build_image": IMAGE, "python": sys.version, "sdk": sdk_versions,
             "west": command(["west", "--version"]), "cmake": command(["cmake", "--version"]),
             "compiler": command([compiler, "--version"]) if compiler else None,
-            "hardware_tested": False}
+            "hardware_tested": False, "frozen_scope": "all active projects",
+            "active_project_count": len(frozen_projects),
+            "excluded_inactive_projects": inactive}
     files = {".config": "config.txt", "zephyr.dts": "zephyr.dts",
              "zmk.elf": "zmk.elf", "zephyr.elf": "zephyr.elf",
              "zmk.map": "zmk.map", "zephyr.map": "zephyr.map"}
