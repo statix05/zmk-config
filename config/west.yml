@@ -14,7 +14,7 @@ manifest:
     # Coherent main+dya stack: Zephyr 4.1 + LVGL 9.3 + custom Studio protocol.
     - name: zmk
       remote: statix05
-      revision: 16afbfa5bde6f35611f1e83824617c06cc833a2d
+      revision: f0da79310f0903246394d8e0dbb1be00f9dcad5f
       import: app/west.yml
     # Exact revision of the Zephyr branch selected by this core, not latest SDK.
     - name: zephyr

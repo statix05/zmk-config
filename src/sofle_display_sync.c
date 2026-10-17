@@ -83,12 +83,16 @@ static void begin_handshake(void) {
 
 static void retry_handler(struct k_work *work) {
     k_mutex_lock(&control_lock, K_FOREVER);
+#if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
     bool send = pending && retries < 12;
-#if !IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-    send = send && connected && !control.sequence_valid;
+#else
+    /* Retry REQUEST until SET, including slow discovery/encryption. Back off
+     * after the initial burst; normal steady state sends no periodic traffic. */
+    bool send = pending && connected && !control.sequence_valid;
 #endif
     struct sofle_display_control copy = control;
-    if (send) retries++;
+    if (send && retries < 12) retries++;
+    bool fast_retry = retries < 12;
     k_mutex_unlock(&control_lock);
     if (!send) return;
     struct sofle_display_message message = {
@@ -102,8 +106,9 @@ static void retry_handler(struct k_work *work) {
     };
     int rc = transmit(message);
     if (rc) LOG_DBG("OLED relay pending: %d", rc);
-    /* Bounded handshake retries only. No steady-state periodic radio traffic. */
-    k_work_reschedule(&retry_work, K_MSEC(500));
+    /* Central retries are bounded. Peripheral requests back off until the
+     * first authoritative SET; an ACKed link has no heartbeat/polling. */
+    k_work_reschedule(&retry_work, K_MSEC(fast_retry ? 500 : 5000));
 }
 
 bool sofle_display_manual_enabled(void) { return snapshot().manual_enabled; }
@@ -152,7 +157,6 @@ static int control_event(const zmk_event_t *event) {
             if (applied) {
                 sofle_status_refresh();
                 message.kind = SOFLE_DISPLAY_ACK;
-                /* Queue ACK away from the Bluetooth callback as well. */
                 /* Peripheral transport API queues its event, does not wait. */
                 transmit(message);
             }

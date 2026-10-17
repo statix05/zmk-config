@@ -4,6 +4,7 @@
  */
 #define DT_DRV_COMPAT statix_profile_zoom
 #include <zephyr/kernel.h>
+#include <zephyr/irq.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/logging/log.h>
 #include <drivers/behavior.h>
@@ -39,6 +40,13 @@ static void finish_gesture(struct k_work *work);
 static K_WORK_DEFINE(zoom_start_work, start_gesture);
 static K_WORK_DELAYABLE_DEFINE(zoom_release_work, finish_gesture);
 
+static void read_physical_body(uint8_t output[8]) {
+    /* nRF52840 is single-core: keep an 8-byte snapshot consistent with key
+     * event threads, without touching global HID state or taking long locks. */
+    unsigned int key = irq_lock();
+    memcpy(output, &zmk_hid_get_keyboard_report()->body, 8);
+    irq_unlock(key);
+}
 static bool same_endpoint(const struct zoom_gesture *gesture) {
     return zmk_endpoint_instance_eq(gesture->endpoint, zmk_endpoint_get_selected());
 }
@@ -56,11 +64,11 @@ static void release_reference(struct zoom_gesture *gesture) {
 }
 static void finish_gesture(struct k_work *work) {
     if (atomic_get(&pressed)) {
-        uint8_t restore[8];
+        uint8_t restore[8], physical[8];
+        read_physical_body(physical);
         /* If output changed, release EVERYTHING at the OLD recipient only.
          * Otherwise restore fresh live state, including physical held keys. */
-        sofle_zoom_release_body(restore,
-            (const uint8_t *)&zmk_hid_get_keyboard_report()->body, same_endpoint(&active));
+        sofle_zoom_release_body(restore, physical, same_endpoint(&active));
         int rc = send_snapshot(&active, restore);
         if (rc && rc != -ENOTCONN && rc != -ENODEV) {
             release_retries++;
@@ -85,10 +93,10 @@ static void start_gesture(struct k_work *work) {
     if (atomic_get(&pressed)) return;
     struct zoom_gesture gesture;
     while (!k_msgq_get(&zoom_gestures, &gesture, K_NO_WAIT)) {
-        uint8_t temporary[8];
+        uint8_t temporary[8], physical[8];
+        read_physical_body(physical);
         int rc = same_endpoint(&gesture) ?
-            sofle_zoom_overlay(temporary,
-                (const uint8_t *)&zmk_hid_get_keyboard_report()->body,
+            sofle_zoom_overlay(temporary, physical,
                 gesture.profile, gesture.direction) : -ECANCELED;
         if (!rc) rc = send_snapshot(&gesture, temporary);
         if (rc) { release_reference(&gesture); continue; }

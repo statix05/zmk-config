@@ -68,19 +68,7 @@
              * inc/dec params are swapped (CW = first param = C_VOL_DN here
              * would sound DOWN... this swap restores CW = volume UP).
              * RIGHT encoder works correctly: CW = DOWN arrow. */
-#ifdef CONFIG_ZMK_SPLIT_ROLE_CENTRAL
             sensor-bindings = <&rsr_volume &rsr_nav>;
-#else
-#ifdef CONFIG_ZMK_SPLIT_ROLE_CENTRAL
-            sensor-bindings = <&rsr_volume &rsr_zoom>;
-#else
-#ifdef CONFIG_ZMK_SPLIT_ROLE_CENTRAL
-            sensor-bindings = <&rsr_volume &rsr_nav>;
-#else
-            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp DOWN UP>; /* peripheral fallback */
-#endif /* peripheral fallback */
-#endif /* peripheral fallback */
-#endif
         };
 
         lower_layer {
@@ -101,7 +89,7 @@
                       &none      &none        &none     &none      &none    &none  &none      &none     &none    &none
             >;
 
-            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp DOWN UP>;
+            sensor-bindings = <&rsr_volume &rsr_zoom>;
         };
 
         raise_layer {
@@ -122,7 +110,7 @@
                           &none         &none          &none         &none         &none  &kp RET  &kp RSHFT     &kp KP_EQUAL &none   &kp TAB
             >;
 
-            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp DOWN UP>;
+            sensor-bindings = <&rsr_volume &rsr_nav>;
         };
     };
 };

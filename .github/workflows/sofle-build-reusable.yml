@@ -205,6 +205,11 @@ jobs:
           fi
         if: ${{ !cancelled() }}
 
+      - name: Verify actual Sofle configuration and bindings
+        run: |
+          python3 "${GITHUB_WORKSPACE}/tools/verify_sofle_build.py" \
+            --build "${{ env.build_dir }}" --name "${{ env.artifact_name }}"
+
       - name: Capture reproducible build metadata
         if: ${{ !cancelled() }}
         run: |

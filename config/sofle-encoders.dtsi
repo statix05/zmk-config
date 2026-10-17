@@ -1,8 +1,7 @@
 /* SPDX-License-Identifier: MIT
- * Central-only runtime defaults. Left inversion is deliberately unchanged.
+ * Runtime defaults; implementations and RPC are central-only. Left inversion is deliberately unchanged.
  * Geometry uses existing push-key layout coordinates, not guessed GPIOs.
  */
-#ifdef CONFIG_ZMK_SPLIT_ROLE_CENTRAL
 / {
     behaviors {
         profile_zoom: profile_zoom {
@@ -47,4 +46,3 @@
         encoders = <&sofle_encoder_left_geometry &sofle_encoder_right_geometry>;
     };
 };
-#endif

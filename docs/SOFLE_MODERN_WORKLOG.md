@@ -99,6 +99,34 @@ No controller firmware, settings or bootloader was written.
   SETs, manual OFF+typing, reconnect, central reboot, sequence wrap and malformed
   input. No independent right toggle or settings writes.
 
+## Integration checkpoint
+
+- Parent reran LVGL9 native tests:384states/768frames, mismatches0, one child;
+  all original PNGs/renderer source still unchanged. Only shared-state capture
+  and modern endpoint API were changed after the port; no UI redesign.
+- Actual static key arrays checked against baseline:60/60/60, BASE and RAI
+  identical, AUX1 only position43 OLED binding changed to none.
+- Modern core now uses statix05/zmk@f0da79310f0903246394d8e0dbb1be00f9dcad5f,
+  directly based on the selected cormoran e5c9b69. Adds non-mutating recipient-
+  pinned HID snapshots and corrects all HOG queues' dequeue-time profile routing.
+  Body/report maps, settings format, board/shield and RPC schemas are unchanged.
+- Source-extracted HOG queue unit test passed17mock notifications with ASan/UBSan;
+  zoom planner17920cases and OLED wire72roundtrips also passed. Not hardware tests.
+- CI39029091984 failed Kconfig; CI39029906605 built both right variants but left
+  failed because CONFIG guards removed DTS nodes before Kconfig existed. Fixed
+  explicit DTS declarations/defaults; generated-DTS gates now reject false greens.
+  Complete logs and causes are in docs/SOFLE_BUILD_FAILURES.md and scratch archives.
+- Right CI metadata verifies actual image SDK0.16.9/GCC12.2.0, west1.5.0, plus69
+  active dependency SHAs. App/NVS/bootloader regions match old nice_nano_v2:
+  0x26000/0xc6000,0xec000/0x8000,0xf4000/0xc000. No physical acceptance yet.
+- USB backup: user explicitly identified LEFT Sofle and disconnected W-Corne/
+  third controller. Initial bootloader mode was rejected; after reconnect the
+  actual working ZMK USB interfaces are visible. Read-only runtime export is
+  running separately; no SET/reset/bond/firmware operations authorized.
+- Bridge first candidate was locally compiled; first-pairing gate still needed
+  an explicit safe action without guessed GPIO. USB vendor-HID setup is being
+  added separately. Original intermediate failures retained, not hidden.
+
 ## Remaining acceptance gates
 
 B: HWMv2/LVGL9/CI port, exact golden graphics, both-half builds.

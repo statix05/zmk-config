@@ -42,3 +42,39 @@ Full original logs (all jobs, not overwritten):
 Extracted job logs: same directory /logs/.
 
 No device was flashed or reset in response to this build failure.
+
+## CI39029906605 — commit071aef440203e3a2152d11697415d48f5f7bbe55
+
+Both RIGHT release/debug builds passed; both LEFT builds failed at the new
+profile-zoom device registration:
+
+```
+DT_N_INST_0_statix_profile_zoom_FULL_NAME undeclared
+```
+
+Cause: CONFIG_ZMK_SPLIT_ROLE_CENTRAL is a Kconfig result, unavailable when
+Devicetree is preprocessed. The CONFIG conditional removed the new DTS nodes
+and retained old sensor fallbacks. These conditionals were removed; node/default
+bindings are now declared in both DTS trees, while the actual implementations
+and RPC features remain central-only through CMake/Kconfig.
+
+Added generated-DTS validation: three real60-binding layers, correct pushes,
+RSR volume/nav/zoom/nav bindings, SETTINGS_TABLE, split roles and unchanged
+application/NVS/bootloader partitions. A negative check correctly rejects the
+previously compiled RIGHT artifact because its RSR nodes were missing: a
+successful compile alone would have been a false positive for StageC.
+
+Full archive:
+/Users/statix/.hermes/cache/scratch/sofle-modern-ci-071aef4-failure/logs.zip
+The two intermediate right UF2s are NOT a final matched firmware pair.
+
+## Additional verified HID routing issue
+
+The modern upstream HOG sender selected the ACTIVE profile at dequeue time.
+During a profile change, even old-endpoint empty reports could therefore go to
+the new peer. The local modern-core fork now carries profile_index in all three
+HOG queues and endpoints pass the intended profile explicitly. Existing public
+sender APIs remain compatibility wrappers; report bodies/descriptors are
+unchanged. Source-extracted queue tests (ASan/UBSan) passed17 mock transport
+notifications including old-target clears, profile switching, disconnect and
+existing overflow-policy routing. These are unit tests, not hardware traces.

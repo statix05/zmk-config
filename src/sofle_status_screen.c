@@ -138,7 +138,7 @@ static void sample_battery(struct k_work *work) {
     atomic_val_t generation = atomic_get(&power_generation);
     /* Stop our ADC polling on USB and idle. A USB/activity event restarts it.
      * Same queue as ZMK battery.c serializes access to the shared sensor. */
-    if (usb_powered() || zmk_activity_get_state() != ZMK_ACTIVITY_ACTIVE) return;
+    if (usb_powered() || !sofle_display_activity_active()) return;
     const struct device *battery = DEVICE_DT_GET(DT_CHOSEN(zmk_battery));
     struct sensor_value soc;
     int rc = device_is_ready(battery)
@@ -182,11 +182,15 @@ ZMK_SUBSCRIPTION(sofle_status_input, zmk_layer_state_changed);
 ZMK_SUBSCRIPTION(sofle_status_input, zmk_split_peripheral_status_changed);
 #endif
 
-/* Called by the source-local behavior; publication uses the display queue.
+/* Called by shared state synchronization; publication uses the display queue.
  * Built-in BLANK_ON_IDLE is disabled: there is no competing wake/unblank path
  * and no delayed 200ms reblank that briefly lights a manually-off display. */
 void sofle_status_refresh(void) {
     sofle_status_widget_cb(NULL);
+    if (sofle_display_activity_active() && !usb_powered() &&
+        !k_work_delayable_is_pending(&sample_work)) {
+        schedule_sample(CONFIG_SOFLE_STATUS_BATTERY_SETTLE_MS);
+    }
 }
 
 /* Queued to the same display queue as initialize_display(). It cannot run
