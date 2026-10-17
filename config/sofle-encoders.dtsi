@@ -1,0 +1,50 @@
+/* SPDX-License-Identifier: MIT
+ * Central-only runtime defaults. Left inversion is deliberately unchanged.
+ * Geometry uses existing push-key layout coordinates, not guessed GPIOs.
+ */
+#ifdef CONFIG_ZMK_SPLIT_ROLE_CENTRAL
+/ {
+    behaviors {
+        profile_zoom: profile_zoom {
+            compatible = "statix,profile-zoom";
+            #binding-cells = <1>;
+            display-name = "Browser zoom by profile";
+        };
+        rsr_volume: rsr_volume {
+            compatible = "zmk,behavior-runtime-sensor-rotate";
+            #sensor-binding-cells = <0>;
+            cw-binding = <&kp C_VOL_DN>;
+            ccw-binding = <&kp C_VOL_UP>;
+        };
+        rsr_nav: rsr_nav {
+            compatible = "zmk,behavior-runtime-sensor-rotate";
+            #sensor-binding-cells = <0>;
+            cw-binding = <&kp DOWN>;
+            ccw-binding = <&kp UP>;
+        };
+        rsr_zoom: rsr_zoom {
+            compatible = "zmk,behavior-runtime-sensor-rotate";
+            #sensor-binding-cells = <0>;
+            cw-binding = <&profile_zoom 0>;
+            ccw-binding = <&profile_zoom 1>;
+        };
+    };
+    sofle_encoder_left_geometry: encoder_left_geometry {
+        compatible = "cormoran,physical-layout-rotary-encoder";
+        x = <600>;
+        y = <274>;
+        size = <100>;
+    };
+    sofle_encoder_right_geometry: encoder_right_geometry {
+        compatible = "cormoran,physical-layout-rotary-encoder";
+        x = <800>;
+        y = <274>;
+        size = <100>;
+    };
+    sofle_encoder_geometry {
+        compatible = "cormoran,physical-layout-rotary-encoders";
+        display-name = "Sofle left / right";
+        encoders = <&sofle_encoder_left_geometry &sofle_encoder_right_geometry>;
+    };
+};
+#endif

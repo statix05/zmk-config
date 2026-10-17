@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-extern const lv_img_dsc_t sofle_union_logo;
+extern const lv_image_dsc_t sofle_union_logo;
 
 #ifdef __cplusplus
 }

@@ -2,28 +2,48 @@ manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
-    # dongle_display
-    - name: englmaxi
-      url-base: https://github.com/englmaxi
-    # nice_oled - nice_epaper - dongle_display!view - oled Adapter
-    - name: mctechnology17
-      url-base: https://github.com/mctechnology17
-    # fork of zmk-nice-oled with honest USB battery display
-    - name: statix05
-      url-base: https://github.com/statix05
     - name: cormoran
       url-base: https://github.com/cormoran
+    - name: englmaxi
+      url-base: https://github.com/englmaxi
+    - name: mctechnology17
+      url-base: https://github.com/mctechnology17
+    - name: statix05
+      url-base: https://github.com/statix05
   projects:
-    # Custom Studio protocol + activity/BLE/split extensions, still Zephyr 3.5
-    # and LVGL 8. Pin the reviewed v0.3-branch+dya commit, not a moving branch.
+    # Coherent main+dya stack: Zephyr 4.1 + LVGL 9.3 + custom Studio protocol.
     - name: zmk
-      remote: cormoran
-      revision: 4493783ef88ce2e653bf8217c92ee17140df71e3
-      import: app/west.yml
-    # Same protocol/storage as cormoran, Kconfig/linker syntax backports only.
-    - name: zmk-feature-custom-settings
       remote: statix05
-      revision: a638e9ff962f12b45f68ed84fed3629dba3ac397
+      revision: 16afbfa5bde6f35611f1e83824617c06cc833a2d
+      import: app/west.yml
+    # Exact revision of the Zephyr branch selected by this core, not latest SDK.
+    - name: zephyr
+      remote: zmkfirmware
+      revision: 10ba6d0cb38bc3d258775d27982f707599320085
+      clone-depth: 1
+      import:
+        name-blocklist:
+          - ci-tools
+          - hal_altera
+          - hal_cypress
+          - hal_infineon
+          - hal_microchip
+          - hal_nxp
+          - hal_openisa
+          - hal_xtensa
+          - hal_st
+          - hal_ti
+          - loramac-node
+          - mcuboot
+          - mcumgr
+          - net-tools
+          - openthread
+          - edtt
+          - trusted-firmware-m
+    # No Zephyr-3.5 compatibility fork is necessary on the modern stack.
+    - name: zmk-feature-custom-settings
+      remote: cormoran
+      revision: c6a7fef3a3be3d3ace5de9a4b0628c6418cd1f3f
     - name: zmk-feature-runtime-macro
       remote: cormoran
       revision: 38530962eb7061b60efcb98e84585cfb1f0cb6de
@@ -35,28 +55,33 @@ manifest:
     - name: zmk-module-settings-rpc
       remote: cormoran
       revision: 78f86df9e6c5edaf57bef3ccbd7f360cfdf49291
-    # Last wire-compatible BLE module before ZMK v0.4 endpoint API rename.
     - name: zmk-module-ble-management
       remote: cormoran
-      revision: 851661cd21f2aded8ec649da86e01a207dc4b973
+      revision: 57738cc4fc6ba80e82a7ac57741a0339cb186cd4
     - name: zmk-module-battery-history
       remote: cormoran
       revision: 307755dd2ad4d320e14de162e8e5ef018f29d929
-    # dongle_display
+    - name: zmk-behavior-runtime-sensor-rotate
+      remote: cormoran
+      revision: 8b1125ed676c1f5e14145d217984f33d0ebdcef4
+    - name: zmk-feature-module-physical-layout
+      remote: cormoran
+      revision: 4f18de45dc27820725d267916b4cdacc0e0b6cf9
+    - name: zmk-feature-input-stream
+      remote: cormoran
+      revision: aeb015908a42a7615ccdccc7feb3a10d23132a71
+    # Retained for other template configurations, NOT selected by Sofle builds.
     - name: zmk-dongle-display
       remote: englmaxi
-      revision: v0.3
-    # nice_oled - nice_epaper (fork: honest USB battery display)
+      revision: c6c4be11c5ede722086a2a1f355cec9c101b9390
     - name: zmk-nice-oled
       remote: statix05
-      revision: main
-    # dongle_display!view
+      revision: 6c0cf35b7311d8e5950ea5826035cb78fce2f83f
     - name: zmk-dongle-display-view
       remote: mctechnology17
-      revision: main
-    # oled Adapter
+      revision: 05bf62b4ee0858cd8801b07aa6cc6716d210932d
     - name: zmk-oled-adapter
       remote: mctechnology17
-      revision: main
+      revision: 892c83d60b6a365c35334c06831d9c5b0f2ba9c0
   self:
     path: config

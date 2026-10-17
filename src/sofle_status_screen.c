@@ -32,6 +32,7 @@
 #endif
 #include "sofle_status_render.h"
 #include "sofle_union_logo.h"
+#include "sofle_display_sync.h"
 
 LOG_MODULE_REGISTER(sofle_status, CONFIG_ZMK_LOG_LEVEL);
 BUILD_ASSERT(DT_PROP(DT_CHOSEN(zephyr_display), width) == SOFLE_PANEL_WIDTH,
@@ -41,16 +42,17 @@ BUILD_ASSERT(DT_PROP(DT_CHOSEN(zephyr_display), height) == SOFLE_PANEL_HEIGHT,
 
 static lv_obj_t *status_image;
 static uint8_t frame[SOFLE_FRAME_BYTES];
-static lv_img_dsc_t frame_desc = {
-    .header.cf = LV_IMG_CF_INDEXED_1BIT,
+static lv_image_dsc_t frame_desc = {
+    .header.magic = LV_IMAGE_HEADER_MAGIC,
+    .header.cf = LV_COLOR_FORMAT_I1,
     .header.w = SOFLE_PANEL_WIDTH,
     .header.h = SOFLE_PANEL_HEIGHT,
+    .header.stride = SOFLE_PANEL_WIDTH / 8,
     .data_size = sizeof(frame),
     .data = frame,
 };
 
 /* RAM only: neither toggle nor rendering writes settings or Bluetooth bonds. */
-static atomic_t manual_off;
 static atomic_t battery_valid;
 static atomic_t battery_percent;
 static atomic_t power_generation;
@@ -75,14 +77,14 @@ struct status_snapshot {
 
 static struct status_snapshot capture_state(const zmk_event_t *event) {
     struct status_snapshot state = {0};
-    state.manual_off = atomic_get(&manual_off);
-    state.active = zmk_activity_get_state() == ZMK_ACTIVITY_ACTIVE;
+    state.manual_off = !sofle_display_manual_enabled();
+    state.active = sofle_display_activity_active();
     state.view.usb_powered = usb_powered();
     state.view.battery_valid = atomic_get(&battery_valid) && !state.view.usb_powered;
     state.view.battery_percent = atomic_get(&battery_percent);
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
     state.view.central = true;
-    state.view.usb_output = zmk_endpoints_selected().transport == ZMK_TRANSPORT_USB;
+    state.view.usb_output = zmk_endpoint_get_selected().transport == ZMK_TRANSPORT_USB;
     state.view.bt_profile = zmk_ble_active_profile_index();
     state.view.connected = zmk_ble_active_profile_is_connected();
     state.view.bonded = !zmk_ble_active_profile_is_open();
@@ -109,7 +111,7 @@ static void update_display(struct status_snapshot state) {
                         DT_PROP_OR(DT_CHOSEN(zephyr_display), inversion_on, 0));
     if (memcmp(frame, next_frame, sizeof(frame)) != 0) {
         memcpy(frame, next_frame, sizeof(frame));
-        lv_img_cache_invalidate_src(&frame_desc);
+        lv_image_cache_drop(&frame_desc);
         lv_obj_invalidate(status_image);
     }
     if (screen_ready && wanted_on != panel_on) {
@@ -183,8 +185,7 @@ ZMK_SUBSCRIPTION(sofle_status_input, zmk_split_peripheral_status_changed);
 /* Called by the source-local behavior; publication uses the display queue.
  * Built-in BLANK_ON_IDLE is disabled: there is no competing wake/unblank path
  * and no delayed 200ms reblank that briefly lights a manually-off display. */
-void sofle_status_toggle(void) {
-    atomic_xor(&manual_off, 1);
+void sofle_status_refresh(void) {
     sofle_status_widget_cb(NULL);
 }
 
@@ -203,10 +204,11 @@ lv_obj_t *zmk_display_status_screen(void) {
     lv_obj_remove_style_all(screen);
     lv_obj_set_size(screen, SOFLE_PANEL_WIDTH, SOFLE_PANEL_HEIGHT);
     lv_obj_clear_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
-    status_image = lv_img_create(screen);
+    status_image = lv_image_create(screen);
     lv_obj_remove_style_all(status_image);
-    lv_img_set_src(status_image, &frame_desc);
+    lv_image_set_src(status_image, &frame_desc);
     lv_obj_set_pos(status_image, 0, 0);
+    sofle_display_control_start();
     sofle_status_widget_init();
     k_work_submit_to_queue(zmk_display_work_q(), &finish_init_work);
     if (!usb_powered()) schedule_sample(CONFIG_SOFLE_STATUS_BATTERY_SETTLE_MS);

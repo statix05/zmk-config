@@ -47,7 +47,7 @@ layers:
   - '{'
   - '}'
   - '&oled_toggle'
-  - '&oled_toggle'
+  - ''
   - '{'
   - '}'
   - ;

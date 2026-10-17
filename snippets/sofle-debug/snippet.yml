@@ -1,0 +1,3 @@
+name: sofle-debug
+append:
+  EXTRA_CONF_FILE: sofle-debug.conf
