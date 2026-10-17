@@ -13,11 +13,13 @@ on:
 
 jobs:
   draw:
+    # This migration pins source SHAs; automatic amend/force-push invalidates them.
+    if: github.ref_name != 'feat/sofle-modern-bridge' || github.event_name == 'workflow_dispatch'
     uses: caksoylar/keymap-drawer/.github/workflows/draw-zmk.yml@main
     permissions:
       contents: write # allow workflow to commit to the repo
     with:
-      amend_commit: true
+      amend_commit: ${{ github.ref_name != 'feat/sofle-modern-bridge' }}
       keymap_patterns: "config/*.keymap" # path to the keymaps to parse
       config_path: "config/config_keymap-drawer.yaml" # config file, ignored if not exists
       output_folder: "keymap-drawer" # path to save produced SVG and keymap YAML files
