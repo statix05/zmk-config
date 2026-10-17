@@ -129,7 +129,7 @@ def main():
     end = source.index("static int zmk_hog_init", begin)
     endpoints = (args.core / "app/src/endpoints.c").read_text()
     for kind in ["keyboard", "consumer", "mouse"]:
-        assert f"zmk_hog_send_{kind}_report_to_profile(&{kind}_report->body, endpoint.ble.profile_index)" in endpoints
+        assert f"zmk_hog_send_{kind}_report_to_profile(&{kind}_report->body, current_instance.ble.profile_index)" in endpoints
     with tempfile.TemporaryDirectory(prefix="sofle-hog-", dir="/Users/statix/.hermes/cache/scratch") as directory:
         c = Path(directory) / "test.c"
         exe = Path(directory) / "test"

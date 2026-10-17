@@ -27,8 +27,10 @@ changes, UICR writes or W-Corne actions without separate user authorization.
   right7875992104e027a8b59e4d774bf604445f1a4d69bc2cf2db2af356c10570b7a3
 - Old renderer test:384statesPASS, all existing docs/oled-preview PNGs unchanged.
   LVGL8 reference8a6a2d1d29d17d1e4bdc94c243c146a39d635fdd.
-- Runtime assignments/NVS have NOT been exported from the physical left half.
-  No export files found in Downloads. Source/UF2 backup is not a runtime backup.
+- Actual USB runtime backup saved privately at baseline backup/runtime-usb/.
+  Parent verified92file SHA256s,180bindings,27behavior metadata entries and28
+  actual custom GET/LIST wire payloads. Standard requests are read/status only.
+  This is not raw NVS/flash or bond-key backup; those keys were not requested.
 
 ## User-confirmed runtime facts
 
@@ -121,8 +123,12 @@ No controller firmware, settings or bootloader was written.
   0x26000/0xc6000,0xec000/0x8000,0xf4000/0xc000. No physical acceptance yet.
 - USB backup: user explicitly identified LEFT Sofle and disconnected W-Corne/
   third controller. Initial bootloader mode was rejected; after reconnect the
-  actual working ZMK USB interfaces are visible. Read-only runtime export is
-  running separately; no SET/reset/bond/firmware operations authorized.
+  actual working ZMK USB interfaces are visible. Real read-only runtime export
+  completed and independently checked; no SET/save/reset/unlock/reboot calls.
+  Profile0 connected;1/2/3/4 open, so DONGLE4 needs no existing bond deletion.
+  One disabled incomplete Combo0 is preserved byte-for-byte (behaviorID0);
+  specialized combo LIST/GET returns-19. Compatibility fix is being evaluated
+  without deleting, normalizing or enabling that stored record.
 - Bridge first candidate was locally compiled; first-pairing gate still needed
   an explicit safe action without guessed GPIO. USB vendor-HID setup is being
   added separately. Original intermediate failures retained, not hidden.

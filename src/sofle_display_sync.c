@@ -84,7 +84,7 @@ static void begin_handshake(void) {
 static void retry_handler(struct k_work *work) {
     k_mutex_lock(&control_lock, K_FOREVER);
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-    bool send = pending && retries < 12;
+    bool send = pending;
 #else
     /* Retry REQUEST until SET, including slow discovery/encryption. Back off
      * after the initial burst; normal steady state sends no periodic traffic. */

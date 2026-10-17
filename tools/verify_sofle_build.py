@@ -6,11 +6,15 @@ from pathlib import Path
 import re
 
 
-def numbers(body, prop):
+def numbers(body, prop, references=None):
     match = re.search(r"(?m)^\s*" + re.escape(prop) + r"\s*=\s*<(.*?)>;", body, re.S)
     if not match:
         raise AssertionError("Missing DTS property " + prop)
-    return [int(x, 0) for x in re.findall(r"0x[0-9a-fA-F]+|\b\d+\b", match[1])]
+    raw = match[1]
+    if references is not None:
+        raw = re.sub(r"&(\w+)", lambda m: str(references[m[1]]), raw)
+    assert "&" not in raw, (prop, "unresolved phandle")
+    return [int(x, 0) for x in re.findall(r"0x[0-9a-fA-F]+|\b\d+\b", raw)]
 
 
 def verify(build, name):
@@ -67,6 +71,11 @@ def verify(build, name):
             phandles[node] = phandle
             if "#binding-cells" in body:
                 cells[phandle] = numbers(body, "#binding-cells")[0]
+    references = {}
+    for match in re.finditer(r"(?m)^\s*((?:\w+:\s*)+)([\w,@.\-]+)\s*\{", dts):
+        if match[2] in phandles:
+            for label in re.findall(r"(\w+):", match[1]):
+                references[label] = phandles[match[2]]
     expected_sensors = {
         "default_layer": [phandles["rsr_volume"], phandles["rsr_nav"]],
         "lower_layer": [phandles["rsr_volume"], phandles["rsr_zoom"]],
@@ -75,8 +84,8 @@ def verify(build, name):
     layers = {}
     for layer, sensors in expected_sensors.items():
         body = nodes[layer]
-        assert numbers(body, "sensor-bindings") == sensors, (layer, "wrong encoder defaults")
-        encoded = numbers(body, "bindings")
+        assert numbers(body, "sensor-bindings", references) == sensors, (layer, "wrong encoder defaults", numbers(body, "sensor-bindings", references), sensors)
+        encoded = numbers(body, "bindings", references)
         decoded = []
         i = 0
         while i < len(encoded):
@@ -89,11 +98,11 @@ def verify(build, name):
         layers[layer] = decoded
     assert layers["default_layer"][43][0] == phandles["dbl_click"]
     assert layers["lower_layer"][42][0] == phandles["behavior_oled_toggle"]
-    assert layers["lower_layer"][43][0] == phandles["behavior_none"]
+    assert layers["lower_layer"][43][0] == references["none"]
     assert layers["default_layer"][57][1] == [1]
     assert layers["default_layer"][58][1] == [2]
-    assert numbers(nodes["rsr_zoom"], "cw-binding") == [phandles["profile_zoom"], 0]
-    assert numbers(nodes["rsr_zoom"], "ccw-binding") == [phandles["profile_zoom"], 1]
+    assert numbers(nodes["rsr_zoom"], "cw-binding", references) == [phandles["profile_zoom"], 0]
+    assert numbers(nodes["rsr_zoom"], "ccw-binding", references) == [phandles["profile_zoom"], 1]
     return {"artifact": name, "role": "central" if left else "peripheral",
             "bindings_per_layer": {k: len(v) for k, v in layers.items()},
             "encoder_order": "left volume / right nav, zoom, nav",

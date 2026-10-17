@@ -64,12 +64,14 @@ static void release_reference(struct zoom_gesture *gesture) {
 }
 static void finish_gesture(struct k_work *work) {
     if (atomic_get(&pressed)) {
+        zmk_endpoint_hid_lock();
         uint8_t restore[8], physical[8];
         read_physical_body(physical);
         /* If output changed, release EVERYTHING at the OLD recipient only.
          * Otherwise restore fresh live state, including physical held keys. */
         sofle_zoom_release_body(restore, physical, same_endpoint(&active));
         int rc = send_snapshot(&active, restore);
+        zmk_endpoint_hid_unlock();
         if (rc && rc != -ENOTCONN && rc != -ENODEV) {
             release_retries++;
             if (active.conn && release_retries >= 32) {
@@ -93,12 +95,14 @@ static void start_gesture(struct k_work *work) {
     if (atomic_get(&pressed)) return;
     struct zoom_gesture gesture;
     while (!k_msgq_get(&zoom_gestures, &gesture, K_NO_WAIT)) {
+        zmk_endpoint_hid_lock();
         uint8_t temporary[8], physical[8];
         read_physical_body(physical);
         int rc = same_endpoint(&gesture) ?
             sofle_zoom_overlay(temporary, physical,
                 gesture.profile, gesture.direction) : -ECANCELED;
         if (!rc) rc = send_snapshot(&gesture, temporary);
+        zmk_endpoint_hid_unlock();
         if (rc) { release_reference(&gesture); continue; }
         active = gesture;
         release_retries = 0;
