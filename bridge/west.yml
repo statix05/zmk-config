@@ -1,0 +1,19 @@
+manifest:
+  version: "0.13"
+  projects:
+    - name: nrf
+      url: https://github.com/nrfconnect/sdk-nrf
+      revision: 6961c01f95c2ec9f0f61870b68904bd398811f49 # NCS v2.9.3
+      import:
+        name-allowlist:
+          - zephyr
+          - cmsis
+          - hal_nordic
+          - segger
+          - tinycrypt
+          - nrfxlib
+          - mbedtls
+          - oberon-psa-crypto
+          - zcbor
+  self:
+    path: bridge-manifest

@@ -1,0 +1,24 @@
+# Licensing
+
+This repository is **multi-licensed**. Every source file carries an
+`SPDX-License-Identifier` header that is authoritative for that file. The full
+license texts live in [`LICENSES/`](LICENSES/).
+
+| Part of the tree | License | Why |
+| --- | --- | --- |
+| `firmware/m1-hogp/` (the bridge firmware) | `LicenseRef-Nordic-5-Clause` | Derived from Nordic Semiconductor's `central_hids` nRF Connect SDK sample. |
+| `firmware/boards/` (CX-40 board support) | `Apache-2.0` | Backported from upstream Zephyr / nRF Connect SDK board definitions. |
+| `firmware/m1-erase/`, `firmware/m1-hogp/pm_static.yml` (original glue) | `Apache-2.0` | Original work by the repository author. |
+
+## Important: the Nordic 5-Clause license restricts the chip
+
+The bridge firmware (`firmware/m1-hogp/`) is governed by
+`LicenseRef-Nordic-5-Clause`. Clause 4 of that license states the software
+**"must only be used with a Nordic Semiconductor ASA integrated circuit."**
+
+This is not a problem for this project — it targets the nRF52840, which is a
+Nordic SoC. But it does mean you **cannot lift the `m1-hogp` code onto a
+non-Nordic chip** (e.g. an ESP32 or RP2040). The `Apache-2.0` parts
+(`boards/`, `m1-erase/`) carry no such restriction.
+
+See [`NOTICE`](NOTICE) for attribution details.

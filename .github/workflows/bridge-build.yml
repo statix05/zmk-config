@@ -1,0 +1,48 @@
+name: Optional bridge candidate (NEVER flash)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Native transport/pairing policy and mocked WebHID protocol tests
+        run: |
+          python3 bridge/tools/test_native.py
+          node bridge/tests/test_setup_ui.js
+      - name: Host build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build device-tree-compiler xz-utils
+          python3 -m pip install --user uv==0.6.17
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Pinned independent NCS workspace and Arm SDK
+        run: python3 bridge/tools/bootstrap_sdk.py "$RUNNER_TEMP/bridge-ncs"
+      - name: Reproduce actual ZMK descriptor
+        run: |
+          git init "$RUNNER_TEMP/zmk-core"
+          git -C "$RUNNER_TEMP/zmk-core" remote add origin https://github.com/cormoran/zmk.git
+          git -C "$RUNNER_TEMP/zmk-core" fetch --depth=1 origin e5c9b6915b56801193e359dd9bad4a167ce0d1b8
+          git -C "$RUNNER_TEMP/zmk-core" checkout --detach FETCH_HEAD
+          python3 bridge/tools/derive_descriptor.py "$RUNNER_TEMP/zmk-core" --check
+      - name: Compile, inspect HEX/config and package unapproved UF2
+        run: python3 bridge/tools/build_candidate.py "$RUNNER_TEMP/bridge-ncs" | tee bridge/ci-build.log
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sofle-bridge-NOT-APPROVED-FOR-FLASH
+          if-no-files-found: error
+          path: |
+            bridge/build/sofle_bridge_NOT_APPROVED.uf2
+            bridge/build/verification.json
+            bridge/build/zephyr/zephyr.elf
+            bridge/build/zephyr/zephyr.map
+            bridge/build/zephyr/zephyr.hex
+            bridge/build/zephyr/.config
+            bridge/build/zephyr/zephyr.dts
+            bridge/pairing/
+            bridge/PAIRING.md
+            bridge/sdk-lock.yml
+            bridge/ci-build.log

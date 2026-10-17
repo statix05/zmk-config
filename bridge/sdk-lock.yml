@@ -1,0 +1,59 @@
+manifest:
+  group-filter:
+  - -bsec
+  - -dragoon
+  - -babblesim
+  - -doc-internal
+  - -nrf-802154
+  - -sidewalk
+  - -find-my
+  projects:
+  - name: nrf
+    url: https://github.com/nrfconnect/sdk-nrf
+    revision: 6961c01f95c2ec9f0f61870b68904bd398811f49
+    west-commands: scripts/west-commands.yml
+  - name: zephyr
+    url: https://github.com/nrfconnect/sdk-zephyr
+    revision: aa34a5632971262ce4002e73ed0fb09e9bd14808
+    west-commands: scripts/west-commands.yml
+  - name: mbedtls
+    url: https://github.com/nrfconnect/sdk-mbedtls
+    revision: 98603a8c91660beac00e0ee1d76198fb7c4ed29b
+    path: modules/crypto/mbedtls
+  - name: oberon-psa-crypto
+    url: https://github.com/nrfconnect/sdk-oberon-psa-crypto
+    revision: 21728cf8402ac567326d0d69eec891a2bfdb8ea3
+    path: modules/crypto/oberon-psa-crypto
+  - name: nrfxlib
+    url: https://github.com/nrfconnect/sdk-nrfxlib
+    revision: aa930e3623651636705a8c81edfb0beda43017d0
+  - name: cmsis
+    url: https://github.com/zephyrproject-rtos/cmsis
+    revision: 4b96cbb174678dcd3ca86e11e1f24bc5f8726da0
+    path: modules/hal/cmsis
+    groups:
+    - hal
+  - name: hal_nordic
+    url: https://github.com/nrfconnect/sdk-hal_nordic
+    revision: bc671cbc669b492144d021faab7df84e79fb0712
+    path: modules/hal/nordic
+    groups:
+    - hal
+  - name: segger
+    url: https://github.com/zephyrproject-rtos/segger
+    revision: b011c45b585e097d95d9cf93edf4f2e01588d3cd
+    path: modules/debug/segger
+    groups:
+    - debug
+  - name: tinycrypt
+    url: https://github.com/zephyrproject-rtos/tinycrypt
+    revision: 1012a3ebee18c15ede5efc8332ee2fc37817670f
+    path: modules/crypto/tinycrypt
+    groups:
+    - crypto
+  - name: zcbor
+    url: https://github.com/zephyrproject-rtos/zcbor
+    revision: 47f34dd7f5284e8750b5a715dee7f77c6c5bdc3f
+    path: modules/lib/zcbor
+  self:
+    path: bridge-manifest

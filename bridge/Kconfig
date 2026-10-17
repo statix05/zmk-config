@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+mainmenu "Sofle optional BLE HID host to USB bridge"
+source "Kconfig.zephyr"
+config BRIDGE_PHYSICAL_PAIRING
+    bool "Unsupported physical pairing (negative-build safety gate only)"
+    default n
+    help
+      No GPIO or reset button is assumed. Keep disabled. The USB vendor feature
+      interface provides explicit scan/select/exact-target first pairing.
+      Enabling physical pairing deliberately fails compilation even with alias.

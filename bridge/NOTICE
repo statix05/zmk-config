@@ -1,0 +1,30 @@
+ble-hid-usb-bridge
+Copyright (c) 2026 hirosato.sou
+
+This product includes software developed by Nordic Semiconductor ASA and the
+Zephyr Project.
+
+------------------------------------------------------------------------------
+firmware/m1-hogp/
+------------------------------------------------------------------------------
+Derived from the "Bluetooth: Central HIDS" (central_hids) sample of the
+nRF Connect SDK.
+  Copyright (c) 2018 Nordic Semiconductor ASA
+  SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+
+------------------------------------------------------------------------------
+firmware/boards/raytac/mdbt50q_cx_40_dongle/
+------------------------------------------------------------------------------
+Backported from the upstream Zephyr RTOS board support for the
+Raytac MDBT50Q-CX-40 dongle.
+  Copyright (c) 2018-2023 Nordic Semiconductor ASA
+  Copyright (c) 2017 Linaro Limited
+  Copyright (c) 2025 Raytac Corporation
+  SPDX-License-Identifier: Apache-2.0
+
+------------------------------------------------------------------------------
+firmware/m1-erase/, firmware/m1-hogp/pm_static.yml
+------------------------------------------------------------------------------
+Original work by the repository author.
+  Copyright (c) 2026 hirosato.sou
+  SPDX-License-Identifier: Apache-2.0
