@@ -1,0 +1,3 @@
+description: Recipient-pinned browser zoom selected by configured BT profile
+compatible: "statix,profile-zoom"
+include: one_param.yaml

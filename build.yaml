@@ -1,16 +1,23 @@
 ---
 include:
-  ### SOFLE (V1/V2/PLUS) on nice_nano_v2 + OLED — from mctechnology17/zmk-config (320★)
-  - board: nice_nano_v2
+  # Same split roles and firmware work directly with Macs or the optional HID bridge.
+  - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_left
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\"  -DCONFIG_ZMK_STUDIO=y -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_TIMEOUT=60000
-    artifact-name: nice_sofle_left_oled_debug
-    snippet: studio-rpc-usb-uart zmk-usb-logging sofle-dya-central
-  - board: nice_nano_v2
+    artifact-name: sofle_left_release
+    snippet: studio-rpc-usb-uart sofle-dya-central sofle-release
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000
+  - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_right
-    cmake-args: -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_TIMEOUT=60000
-    artifact-name: nice_sofle_right_oled
-
-  - board: nice_nano_v2
-    shield: settings_reset
-    artifact-name: nice_settings_reset
+    artifact-name: sofle_right_release
+    snippet: sofle-release
+    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000
+  - board: nice_nano@2.0.0/nrf52840/zmk
+    shield: sofle_left
+    artifact-name: sofle_left_debug
+    snippet: studio-rpc-usb-uart sofle-dya-central zmk-usb-logging sofle-debug
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000
+  - board: nice_nano@2.0.0/nrf52840/zmk
+    shield: sofle_right
+    artifact-name: sofle_right_debug
+    snippet: zmk-usb-logging sofle-debug
+    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000

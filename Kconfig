@@ -9,7 +9,7 @@ config ZMK_BEHAVIOR_OLED_TOGGLE
 config SOFLE_STATUS_SCREEN
     bool "Minimal static status screen for classic Sofle SSD1306"
     depends on ZMK_DISPLAY && (SHIELD_SOFLE_LEFT || SHIELD_SOFLE_RIGHT)
-    select LV_USE_IMG
+    select LV_USE_IMAGE
     select LV_USE_THEME_MONO
     default n
 
@@ -24,5 +24,29 @@ config SOFLE_STATUS_BATTERY_INTERVAL_MS
     depends on SOFLE_STATUS_SCREEN
     default 60000
     range 10000 300000
+
+config SOFLE_MAC1_BT_PROFILE
+    int "BT profile index for MAC1"
+    depends on SOFLE_STATUS_SCREEN
+    default 0
+    range 0 4
+
+config SOFLE_MAC2_BT_PROFILE
+    int "BT profile index for MAC2"
+    depends on SOFLE_STATUS_SCREEN
+    default 1
+    range 0 4
+
+config SOFLE_DONGLE_BT_PROFILE
+    int "BT profile index for optional HID bridge"
+    depends on SOFLE_STATUS_SCREEN
+    default 4
+    range 0 4
+
+config SOFLE_ZOOM_TAP_MS
+    int "Recipient-pinned browser zoom pulse duration"
+    depends on SOFLE_STATUS_SCREEN && ZMK_SPLIT_ROLE_CENTRAL
+    default 5
+    range 1 30
 
 endmenu

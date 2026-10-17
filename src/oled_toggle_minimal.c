@@ -1,17 +1,19 @@
 /* SPDX-License-Identifier: MIT
- * Source-local toggle. Existing behavior node/name stays unchanged so saved
- * Studio bindings keep resolving. One press toggles; release does nothing.
+ * Central is the single owner of explicit shared OLED state. Preserve existing
+ * behavior_oled_toggle device name so SETTINGS_TABLE bindings remain valid.
  */
 #define DT_DRV_COMPAT zmk_behavior_oled_toggle
 #include <zephyr/kernel.h>
 #include <drivers/behavior.h>
 #include <zmk/behavior.h>
-
-extern void sofle_status_toggle(void);
+#include "sofle_display_sync.h"
 
 static int pressed(struct zmk_behavior_binding *binding,
                     struct zmk_behavior_binding_event event) {
-    sofle_status_toggle();
+    /* A saved old Studio AUX1/right OLED binding must not retain the removed
+     * action. Preserve other remaps and never reset/rewrite the settings table. */
+    if (event.layer == 1 && event.position == 43) return ZMK_BEHAVIOR_OPAQUE;
+    sofle_display_toggle_global();
     return ZMK_BEHAVIOR_OPAQUE;
 }
 static int released(struct zmk_behavior_binding *binding,
@@ -21,7 +23,7 @@ static int released(struct zmk_behavior_binding *binding,
 static const struct behavior_driver_api api = {
     .binding_pressed = pressed,
     .binding_released = released,
-    .locality = BEHAVIOR_LOCALITY_EVENT_SOURCE,
+    .locality = BEHAVIOR_LOCALITY_CENTRAL,
 #if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
     .get_parameter_metadata = zmk_behavior_get_empty_param_metadata,
 #endif

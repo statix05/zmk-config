@@ -1,0 +1,58 @@
+{
+  "states_tested": 384,
+  "rotation": "clockwise, 32x128 -> 128x32",
+  "guard_bytes": "passed",
+  "logo_overwrite": "none",
+  "region_intersection": "none",
+  "usb_battery_mask": "passed",
+  "regions": {
+    "logo": [
+      0,
+      0,
+      32,
+      32
+    ],
+    "power": [
+      0,
+      40,
+      32,
+      47
+    ],
+    "battery": [
+      0,
+      50,
+      32,
+      57
+    ],
+    "transport": [
+      0,
+      70,
+      32,
+      77
+    ],
+    "connection": [
+      0,
+      82,
+      32,
+      89
+    ],
+    "layer_label": [
+      0,
+      100,
+      32,
+      107
+    ],
+    "layer_value": [
+      0,
+      112,
+      32,
+      119
+    ]
+  },
+  "lvgl_sha": "f1db87ee98f1810328a8419572fa42a3b5f352ae",
+  "golden_pngs_byte_identical": 9,
+  "frames_tested": 768,
+  "frames_sha256": "019ec5fb3628e6715e12112e46d1f9437c74cdb5ef4fc067e44f3a5faaeabae7",
+  "golden_frames_compared": 768,
+  "native_lvgl": "LVGL 9.3.0 native I1: states=384 frames=768 flushes=768 mismatches=0 children=1"
+}

@@ -28,12 +28,12 @@ static const uint8_t sofle_union_logo_map[] = {
 
 _Static_assert(sizeof(sofle_union_logo_map) == 136, "Invalid indexed image size");
 
-const lv_img_dsc_t sofle_union_logo = {
-    .header.cf = LV_IMG_CF_INDEXED_1BIT,
-    .header.always_zero = 0,
-    .header.reserved = 0,
+const lv_image_dsc_t sofle_union_logo = {
+    .header.magic = LV_IMAGE_HEADER_MAGIC,
+    .header.cf = LV_COLOR_FORMAT_I1,
     .header.w = 32,
     .header.h = 32,
+    .header.stride = 4,
     .data_size = sizeof(sofle_union_logo_map),
     .data = sofle_union_logo_map,
 };
