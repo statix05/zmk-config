@@ -1,23 +1,30 @@
 ---
 include:
   # Same split roles and firmware work directly with Macs or the optional HID bridge.
+  # Deep sleep DISABLED on both halves (-DCONFIG_ZMK_SLEEP=n overrides
+  # sofle.conf): ZMK deep sleep is sys_poweroff (RAM wiped, cold reboot on
+  # wake), sleep timers are NOT synced between halves (zmk#2408), and a
+  # woken peripheral often fails to re-establish the split link (zmk#718,
+  # #2904). This caused the "right half dead until power cycle" symptom and
+  # also wiped unsaved Studio edits. With sleep off the halves stay paired
+  # permanently; turn the power switch off for long storage instead.
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_left
     artifact-name: sofle_left_release
     snippet: studio-rpc-usb-uart sofle-dya-central sofle-release
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_right
     artifact-name: sofle_right_release
     snippet: sofle-release
-    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000
+    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_left
     artifact-name: sofle_left_debug
     snippet: studio-rpc-usb-uart sofle-dya-central zmk-usb-logging sofle-debug
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_right
     artifact-name: sofle_right_debug
     snippet: zmk-usb-logging sofle-debug
-    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000
+    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
