@@ -20,6 +20,7 @@
 /* Register the assignable DYA runtime behavior without changing any key. */
 #include <behaviors/runtime_macro.dtsi>
 #include "sofle-encoders.dtsi"
+#include "sofle-esb-overlay.dtsi"
 
 /* One central-owned OLED state; behavior node/name retained for saved IDs. */
 / {

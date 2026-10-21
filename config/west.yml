@@ -10,6 +10,10 @@ manifest:
       url-base: https://github.com/mctechnology17
     - name: statix05
       url-base: https://github.com/statix05
+    - name: badjeff
+      url-base: https://github.com/badjeff
+    - name: nrfconnect
+      url-base: https://github.com/nrfconnect
   projects:
     # Coherent main+dya stack: Zephyr 4.1 + LVGL 9.3 + custom Studio protocol.
     - name: zmk
@@ -64,6 +68,22 @@ manifest:
     - name: zmk-behavior-runtime-sensor-rotate
       remote: cormoran
       revision: 8b1125ed676c1f5e14145d217984f33d0ebdcef4
+    # ESB split transport (2.4 GHz Enhanced ShockBurst) for the dongle build.
+    # sdk-nrf is badjeff's patched NCS fork needed by the module on Zephyr 4.1.
+    # The duplicate 'zephyr' project inside sdk-nrf is ignored: our pinned
+    # zephyr (defined above/imported first) takes precedence in west.
+    - name: zmk-feature-split-esb
+      remote: badjeff
+      revision: 314c7cbaf4a74e1add1d6ffc8249de3e29965b8c
+    - name: sdk-nrf
+      remote: badjeff
+      revision: 9b3d2623fdcd9c0fd0284f860beea924568c9826
+      path: nrf
+    - name: nrfxlib
+      remote: nrfconnect
+      revision: dfadf17305d8f000eda9aa74a5b9ff1c5647a23e
+      repo-path: sdk-nrfxlib
+      path: nrfxlib
     - name: zmk-feature-module-physical-layout
       remote: cormoran
       revision: 4f18de45dc27820725d267916b4cdacc0e0b6cf9

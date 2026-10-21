@@ -60,3 +60,23 @@ include:
     artifact-name: sofle_right_peripheral_release
     snippet: sofle-release
     cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
+  # ---- ESB 2.4 GHz dongle variant (badjeff/zmk-feature-split-esb) ----
+  # Dongle is a USB HID central; halves talk to it over Enhanced ShockBurst.
+  # ESB conf is passed via cmake-args (snippet sofle-esb also available);
+  # the shared esb_split address node comes from config/sofle-esb-overlay.dtsi
+  # included by the keymaps. BLE and Studio are OFF in these targets.
+  - board: nice_nano@2.0.0/nrf52840/zmk
+    shield: sofle_dongle_pro_micro
+    artifact-name: sofle_dongle_esb_release
+    snippet: sofle-release
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Dongle\" -DCONFIG_ZMK_BLE=n -DCONFIG_ZMK_SPLIT_BLE=n -DCONFIG_ZMK_SPLIT_WIRED=n -DCONFIG_ZMK_SPLIT_ESB=y -DCONFIG_ZMK_SPLIT_ESB_PERIPHERAL_COUNT=2 -DCONFIG_MPSL_TIMESLOT_SESSION_COUNT=1 -DCONFIG_SYSTEM_WORKQUEUE_STACK_SIZE=4096 -DCONFIG_ESB_MAX_PAYLOAD_LENGTH=48 -DCONFIG_ESB_TX_FIFO_SIZE=1 -DCONFIG_INPUT_THREAD_STACK_SIZE=4096 -DCONFIG_INPUT_QUEUE_MAX_MSGS=256 -DCONFIG_MAIN_STACK_SIZE=4096 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000
+  - board: nice_nano@2.0.0/nrf52840/zmk
+    shield: sofle_left_peripheral
+    artifact-name: sofle_left_esb_release
+    snippet: sofle-release
+    cmake-args: -DCONFIG_ZMK_BLE=n -DCONFIG_ZMK_SPLIT_BLE=n -DCONFIG_ZMK_SPLIT_WIRED=n -DCONFIG_ZMK_SPLIT_ESB=y -DCONFIG_ZMK_SPLIT_ESB_PERIPHERAL_ID=1 -DCONFIG_MPSL_TIMESLOT_SESSION_COUNT=1 -DCONFIG_SYSTEM_WORKQUEUE_STACK_SIZE=4096 -DCONFIG_ESB_MAX_PAYLOAD_LENGTH=48 -DCONFIG_ESB_TX_FIFO_SIZE=1 -DCONFIG_INPUT_THREAD_STACK_SIZE=4096 -DCONFIG_INPUT_QUEUE_MAX_MSGS=256 -DCONFIG_MAIN_STACK_SIZE=4096 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000
+  - board: nice_nano@2.0.0/nrf52840/zmk
+    shield: sofle_right
+    artifact-name: sofle_right_esb_release
+    snippet: sofle-release
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_ESB\" -DCONFIG_ZMK_BLE=n -DCONFIG_ZMK_SPLIT_BLE=n -DCONFIG_ZMK_SPLIT_WIRED=n -DCONFIG_ZMK_SPLIT_ESB=y -DCONFIG_ZMK_SPLIT_ESB_PERIPHERAL_ID=2 -DCONFIG_MPSL_TIMESLOT_SESSION_COUNT=1 -DCONFIG_SYSTEM_WORKQUEUE_STACK_SIZE=4096 -DCONFIG_ESB_MAX_PAYLOAD_LENGTH=48 -DCONFIG_ESB_TX_FIFO_SIZE=1 -DCONFIG_INPUT_THREAD_STACK_SIZE=4096 -DCONFIG_INPUT_QUEUE_MAX_MSGS=256 -DCONFIG_MAIN_STACK_SIZE=4096 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000

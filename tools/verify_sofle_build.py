@@ -31,9 +31,9 @@ def verify(build, name):
     # dongle runs the minimal keymap (no DYA modules, no custom behaviors,
     # no status screen) and peripherals are plain split peripherals.
     role = None
-    if "dongle_central" in name:
+    if "dongle_central" in name or "dongle_esb" in name:
         role = "dongle-central"
-    elif "_peripheral_" in name:
+    elif "_peripheral_" in name or "_esb_" in name:
         role = "peripheral"
     if role == "dongle-central":
         for symbol in ["ZMK_SPLIT", "ZMK_SPLIT_ROLE_CENTRAL", "USB_DEVICE_STACK"]:
