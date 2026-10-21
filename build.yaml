@@ -8,11 +8,19 @@ include:
   # #2904). This caused the "right half dead until power cycle" symptom and
   # also wiped unsaved Studio edits. With sleep off the halves stay paired
   # permanently; turn the power switch off for long storage instead.
+  # Left (central) radio-tuning iteration 3: the nRF52840 radio on the left
+  # half time-shares three links at once (split 7.5ms + dongle HID + Studio
+  # BLE advertising) on Zephyr's legacy LL, which jitters and queues key
+  # events from the right half. Changes, both left-only:
+  #  - Studio BLE transport OFF (DYA runs over USB per README; removes
+  #    always-unlocked BLE advertising/service load), UART transport stays.
+  #  - Host-link PPCP widened to 10-30ms interval so the dongle link stops
+  #    asking for 7.5ms events; right-half split link params untouched.
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_left
     artifact-name: sofle_left_release
     snippet: studio-rpc-usb-uart sofle-dya-central sofle-release
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_STUDIO_TRANSPORT_BLE=n -DCONFIG_BT_PERIPHERAL_PREF_MIN_INT=8 -DCONFIG_BT_PERIPHERAL_PREF_MAX_INT=24
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_right
     artifact-name: sofle_right_release
@@ -22,7 +30,7 @@ include:
     shield: sofle_left
     artifact-name: sofle_left_debug
     snippet: studio-rpc-usb-uart sofle-dya-central zmk-usb-logging sofle-debug
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_STUDIO_TRANSPORT_BLE=n -DCONFIG_BT_PERIPHERAL_PREF_MIN_INT=8 -DCONFIG_BT_PERIPHERAL_PREF_MAX_INT=24
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_right
     artifact-name: sofle_right_debug
