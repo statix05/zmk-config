@@ -52,7 +52,12 @@ def verify(build, name):
             assert cfg.get(symbol) != "y", ("release logging", symbol)
     else:
         require("LOG")
-        require("ZMK_LOG_LEVEL", "3")
+        # Debug builds log at DBG (4) so split-link loss/reconnect events are
+        # visible; the previous release INF(3) value was too quiet to diagnose.
+        require("ZMK_LOG_LEVEL", "4")
+    # Deep sleep is deliberately disabled on both halves: it is a per-half
+    # unsynchronized sys_poweroff that breaks the split link on wake (zmk#718).
+    assert cfg.get("ZMK_SLEEP") != "y", "deep sleep must stay disabled"
     nodes = {}
     for match in re.finditer(r"(?m)^\s*(?:\w+:\s*)?([\w,@.\-]+)\s*\{([^{}]*)\};", dts, re.S):
         nodes[match[1]] = match[2]
