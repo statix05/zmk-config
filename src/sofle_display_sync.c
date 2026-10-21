@@ -206,10 +206,12 @@ void sofle_display_control_start(void) {
     k_mutex_unlock(&control_lock);
     begin_handshake();
 #else
+#if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE)
     k_mutex_lock(&control_lock, K_FOREVER);
     connected = zmk_split_bt_peripheral_is_connected();
     bool request = connected && !control.sequence_valid;
     k_mutex_unlock(&control_lock);
     if (request) begin_handshake();
+#endif
 #endif
 }

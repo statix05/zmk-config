@@ -20,17 +20,17 @@ include:
     shield: sofle_left
     artifact-name: sofle_left_release
     snippet: studio-rpc-usb-uart sofle-dya-central sofle-release
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_STUDIO_TRANSPORT_BLE=n -DCONFIG_BT_PERIPHERAL_PREF_MIN_INT=8 -DCONFIG_BT_PERIPHERAL_PREF_MAX_INT=24
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_STUDIO_TRANSPORT_BLE=n -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_BT_PERIPHERAL_PREF_MIN_INT=8 -DCONFIG_BT_PERIPHERAL_PREF_MAX_INT=24
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_right
     artifact-name: sofle_right_release
     snippet: sofle-release
-    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
+    cmake-args: -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_left
     artifact-name: sofle_left_debug
     snippet: studio-rpc-usb-uart sofle-dya-central zmk-usb-logging sofle-debug
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_STUDIO_TRANSPORT_BLE=n -DCONFIG_BT_PERIPHERAL_PREF_MIN_INT=8 -DCONFIG_BT_PERIPHERAL_PREF_MAX_INT=24
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_STUDIO_TRANSPORT_BLE=n -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_BT_PERIPHERAL_PREF_MIN_INT=8 -DCONFIG_BT_PERIPHERAL_PREF_MAX_INT=24
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_right
     artifact-name: sofle_right_debug
@@ -49,17 +49,17 @@ include:
     shield: sofle_dongle_pro_micro
     artifact-name: sofle_dongle_central_release
     snippet: sofle-release
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Dongle\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Dongle\" -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_left_peripheral
     artifact-name: sofle_left_peripheral_release
     snippet: sofle-release
-    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
+    cmake-args: -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_right
     artifact-name: sofle_right_peripheral_release
     snippet: sofle-release
-    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
+    cmake-args: -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
   # ---- ESB 2.4 GHz dongle variant (badjeff/zmk-feature-split-esb) ----
   # Dongle is a USB HID central; halves talk to it over Enhanced ShockBurst.
   # ESB conf is passed via cmake-args (snippet sofle-esb also available);

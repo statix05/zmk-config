@@ -96,7 +96,9 @@ static struct status_snapshot capture_state(const zmk_event_t *event) {
         snprintf(state.view.layer, sizeof(state.view.layer), "%u", (unsigned)index);
     }
 #else
+#if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE)
     state.view.connected = zmk_split_bt_peripheral_is_connected();
+#endif
 #endif
     return state;
 }
