@@ -133,6 +133,25 @@ No controller firmware, settings or bootloader was written.
   an explicit safe action without guessed GPIO. USB vendor-HID setup is being
   added separately. Original intermediate failures retained, not hidden.
 
+## Delivery checkpoint
+
+CI39033141263 / sourcea8bc7f7: all four half targets PASSED compilation and
+actual generated-DTS/config gates. Core579892a adds serialized HID updates.
+Downloaded and independently parsed all four UF2s: complete unique block IDs,
+application-only address ranges, family0xada52840, exact136-byte logo in both
+halves and175-byte bridge HID descriptor in left firmware. Metadata hashes and
+frozen manifests checked. No hardware flashing or acceptance was performed.
+
+Bundle: /Users/statix/Desktop/Проекты/zmk-config/firmware/sofle-modern-a8bc7f7/
+README.ru.md and VERIFICATION.json explain limitations and original-pair rollback.
+Bridge candidate has explicit USB setup and independently passed native C/JS,
+linked descriptor and UF2 checks; still NOT_APPROVED for physical flashing.
+
+NOT COMPLETE: existing disabled Combo0 still yields specialized RPC ENODEV;
+its raw record is preserved. Investigation was stopped at the owner's budget
+request, and unverified scratch edits were not integrated. No new agents.
+Actual DYA write/persistence and all physical/manual tests remain pending.
+
 ## Remaining acceptance gates
 
 B: HWMv2/LVGL9/CI port, exact golden graphics, both-half builds.
