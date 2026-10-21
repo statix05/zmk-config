@@ -36,3 +36,27 @@ include:
     artifact-name: sofle_right_debug
     snippet: zmk-usb-logging sofle-debug
     cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
+  # ---- Dongle-as-central architecture (official upstream approach) ----
+  # The dongle (third nRF52840) is the split CENTRAL. Both halves are BLE
+  # peripherals that talk ONLY to the dongle over the split protocol; the
+  # dongle re-emits USB HID to the PC. This removes the left half's
+  # multi-link radio contention entirely and is how upstream dongle builds
+  # (mctechnology17 sofle_dongle_*) are designed to work.
+  # Minimal keymap on the dongle: no DYA runtime modules, no custom
+  # behaviors (sofle_dongle_pro_micro.keymap) — fewer reconnect paths.
+  # Deep sleep stays off everywhere for the same split-reconnect reasons.
+  - board: nice_nano@2.0.0/nrf52840/zmk
+    shield: sofle_dongle_pro_micro
+    artifact-name: sofle_dongle_central_release
+    snippet: sofle-release
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Dongle\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
+  - board: nice_nano@2.0.0/nrf52840/zmk
+    shield: sofle_left_peripheral
+    artifact-name: sofle_left_peripheral_release
+    snippet: sofle-release
+    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
+  - board: nice_nano@2.0.0/nrf52840/zmk
+    shield: sofle_right
+    artifact-name: sofle_right_peripheral_release
+    snippet: sofle-release
+    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n

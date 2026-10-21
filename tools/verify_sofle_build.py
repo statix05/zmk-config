@@ -27,6 +27,28 @@ def verify(build, name):
     cfg = dict(re.findall(r"^CONFIG_(\w+)=(.*)$", config, re.M))
     def require(symbol, value="y"):
         assert cfg.get(symbol) == value, (symbol, cfg.get(symbol), value)
+    # Dongle-as-central and peripheral-role builds use different rules: the
+    # dongle runs the minimal keymap (no DYA modules, no custom behaviors,
+    # no status screen) and peripherals are plain split peripherals.
+    role = None
+    if "dongle_central" in name:
+        role = "dongle-central"
+    elif "_peripheral_" in name:
+        role = "peripheral"
+    if role == "dongle-central":
+        for symbol in ["ZMK_SPLIT", "ZMK_SPLIT_ROLE_CENTRAL", "USB_DEVICE_STACK"]:
+            require(symbol)
+        assert cfg.get("ZMK_SLEEP") != "y", "deep sleep must stay disabled"
+        return {"artifact": name, "role": role, "keymap": "minimal",
+                "release_logging_off": name.endswith("_release"), "hardware_tested": False}
+    if role == "peripheral":
+        for symbol in ["ZMK_SPLIT", "USB_DEVICE_STACK"]:
+            require(symbol)
+        assert cfg.get("ZMK_SPLIT_ROLE_CENTRAL") != "y"
+        assert cfg.get("ZMK_STUDIO_RPC") != "y"
+        assert cfg.get("ZMK_SLEEP") != "y", "deep sleep must stay disabled"
+        return {"artifact": name, "role": role,
+                "release_logging_off": name.endswith("_release"), "hardware_tested": False}
     for symbol in ["SOFLE_STATUS_SCREEN", "USB_DEVICE_STACK", "ZMK_SPLIT",
                    "ZMK_SPLIT_RELAY_EVENT", "LV_USE_IMAGE", "ZMK_DISPLAY_STATUS_SCREEN_CUSTOM"]:
         require(symbol)
