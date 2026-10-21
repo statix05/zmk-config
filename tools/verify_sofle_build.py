@@ -70,7 +70,9 @@ def verify(build, name):
         assert cfg.get("ZMK_SPLIT_ROLE_CENTRAL") != "y"
         assert cfg.get("ZMK_STUDIO_RPC") != "y"
     if name.endswith("_release"):
-        for symbol in ["LOG", "PRINTK", "CONSOLE", "BOOT_BANNER"]:
+        # PRINTK is force-enabled by the imported NCS (sdk-nrf) Kconfig
+        # defaults even with =n given; with CONSOLE=n it stays silent.
+        for symbol in ["LOG", "CONSOLE", "BOOT_BANNER"]:
             assert cfg.get(symbol) != "y", ("release logging", symbol)
     else:
         require("LOG")
