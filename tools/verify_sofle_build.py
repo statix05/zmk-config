@@ -124,11 +124,9 @@ def verify(build, name):
                 i += count + 1
             assert i == len(encoded) and len(decoded) == 60, (layer, len(decoded))
             layers[layer] = decoded
-        # BT channels on RAI row 1: BT_SEL 0..3 reachable (4 spare).
-        for idx, profile in ((1, 0), (2, 1), (3, 2), (4, 3)):
-            assert layers["raise_layer"][idx][1] == [profile], (
-                "BT_SEL", idx, profile, layers["raise_layer"][idx],
-                [x[1] for x in layers["raise_layer"][:8]])
+        for idx, profile in ((1, 0), (2, 1), (3, 2), (4, 3), (5, 4)):
+            assert layers["raise_layer"][idx][1] == [3, profile], (
+                "BT_SEL", idx, profile, layers["raise_layer"][idx])
     return {"artifact": name, "role": "central" if left else "peripheral",
             "bindings_per_layer": {k: len(v) for k, v in layers.items()} if left else None,
             "encoder_defaults": "left volume (PCB inverted) / right nav, all layers",
