@@ -1,9 +1,9 @@
 layout: {zmk_keyboard: sofle}
 layers:
   BAS: ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', Esc, Q, W, E, R, T, Y, U, I, O, P, '$$mdi:backspace-outline$$', ↹, A, S, D, F, G, H, J, K, L,
-    ;, '''', '$$mdi:apple-keyboard-shift$$', Z, X, C, V, B, '$$mdi:apple-keyboard-option$$', '&dbl_click', N, M, ',', ., /, \, '{', '$$mdi:apple-keyboard-control$$',
-    '$$mdi:apple-keyboard-option$$', '$$mdi:apple-keyboard-command$$', ␣, ⏎, '$$mdi:apple-keyboard-shift$$', AUX1, RAI, '}']
-  AUX1:
+    ;, '''', '$$mdi:apple-keyboard-shift$$', Z, X, C, V, B, '$$mdi:apple-keyboard-option$$', ⏎, N, M, ',', ., /, \, '{', '$$mdi:apple-keyboard-control$$', '$$mdi:apple-keyboard-option$$',
+    '$$mdi:apple-keyboard-command$$', ␣, ⏎, '$$mdi:apple-keyboard-shift$$', AUX, RAI, '}']
+  AUX:
   - '`'
   - F1
   - F2
@@ -46,8 +46,8 @@ layers:
   - KP PLUS
   - '{'
   - '}'
-  - '&oled_toggle'
-  - ''
+  - $$mdi:apple-keyboard-option$$
+  - ⏎
   - '{'
   - '}'
   - ;
@@ -102,13 +102,13 @@ layers:
   - ','
   - .
   - ''
-  - '0x7A'
-  - '0x7B'
-  - '0x7C'
-  - '0x7D'
   - ''
   - ''
   - ''
+  - ''
+  - ''
+  - $$mdi:apple-keyboard-option$$
+  - ⏎
   - KP DIVIDE
   - $$mdi:backspace-outline$$
   - KP 0

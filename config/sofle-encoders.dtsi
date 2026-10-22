@@ -4,11 +4,6 @@
  */
 / {
     behaviors {
-        profile_zoom: profile_zoom {
-            compatible = "statix,profile-zoom";
-            #binding-cells = <1>;
-            display-name = "Browser zoom by profile";
-        };
         rsr_volume: rsr_volume {
             compatible = "zmk,behavior-runtime-sensor-rotate";
             #sensor-binding-cells = <0>;
@@ -20,12 +15,6 @@
             #sensor-binding-cells = <0>;
             cw-binding = <&kp DOWN>;
             ccw-binding = <&kp UP>;
-        };
-        rsr_zoom: rsr_zoom {
-            compatible = "zmk,behavior-runtime-sensor-rotate";
-            #sensor-binding-cells = <0>;
-            cw-binding = <&profile_zoom 0>;
-            ccw-binding = <&profile_zoom 1>;
         };
     };
     sofle_encoder_left_geometry: encoder_left_geometry {
