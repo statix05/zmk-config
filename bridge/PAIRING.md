@@ -4,9 +4,15 @@
 
 ## Обычный ввод и однократная настройка
 
-Sofle left остаётся BLE central для своей правой половинки и BLE HID peripheral для bridge. Optional bridge — BLE HID host → стандартный USB keyboard/consumer/mouse. На Sofle DONGLE = **BT_SEL 4**, прямые профили Mac 0/1 не меняются. Bluetooth-настройки ОС и постоянное приложение для ввода не нужны. WebHID нужен только для явного первого pairing; страницу можно закрыть после подтверждённого сохранения bond. Это не Studio RPC, не remapper, не прошивальщик.
+Sofle left остаётся BLE central для своей правой половинки и BLE HID peripheral для bridge. Optional bridge — BLE HID host → стандартный USB keyboard/consumer/mouse. В clean-ветке DONGLE = **BT_SEL 3** (профили 0/1/2 = Macs, 4 запасной). Bluetooth-настройки ОС и постоянное приложение для ввода не нужны. Это не Studio RPC, не remapper, не прошивальщик.
 
-Не предполагать, что профиль4 свободен. Если он занят, остановиться: в этой работе нет разрешения на BT_CLEAR, reset, unpair или очистку settings. Bridge тоже не имеет таких команд. Если bridge уже хранит bond, SELECT/ARM возвращают BONDED и не заменяют его. Повреждённый/чужой bond — отдельная задача с отдельным разрешением, не повод для автоматического удаления.
+## Автосопряжение (v2, по умолчанию)
+
+Если в bond-хранилище донгла **ноль** связей и появляется connectable-объявление с HID UUID и **точным полным именем** `CONFIG_BRIDGE_PEER_NAME` (по умолчанию `Sofle_Oled`), донгл сам соединяется и бондируется — страница не нужна. Клавиатура рекламирует такое имя только когда профиль в режиме pairing (BT_SEL 3 без связи), поэтому flow: прошить донгл → BT_SEL 3 на клавиатуре → связь устанавливается сама.
+
+Риск и граница: имя из рекламы недостоверно (может быть подделано соседним устройством). Автопаринг принимает **первое** точное совпадение имени, пока хранилище пусто. При любом существующем bond путь полностью отключён. Повторное сопряжение: отправить **SETUP_UNBOND** (страница), затем снова BT_SEL 3 на клавиатуре. Для заведомо точного выбора адреса остаётся ручной SCAN/SELECT/ARM ниже.
+
+Не предполагать, что профиль3 свободен. Если он занят, остановиться. Если bridge уже хранит bond, SELECT/ARM возвращают BONDED и не заменяют его; автопаринг тоже неактивен. Единственный путь очистки — **явная** команда SETUP_UNBOND (ничего не очищается неявно: ни при перезагрузке, ни при USB reset, ни при неудаче pairing).
 
 ## Страница настройки
 
@@ -43,7 +49,7 @@ SET body offsets (нумерация без report ID):
 | Offset | Размер | Значение |
 |---|---:|---|
 |0|1|version=1|
-|1|1|op:1 SCAN,2 READ,3 SELECT,4 ARM,5 STATUS|
+|1|1|op:1 SCAN,2 READ,3 SELECT,4 ARM,5 STATUS,6 UNBOND|
 |2|1|READ index0..15, для остальных строго0|
 |3|1|SELECT/ARM address type:0 public,1 random; иначе0|
 |4..9|6|SELECT/ARM BLE address **little endian**; иначе нули|
@@ -66,11 +72,11 @@ GET body:
 |13|1|RSSI signed int8|
 |14..31|18|недостоверное sanitized ASCII имя|
 
-READ/STATUS разрешены при connection/bond и ничего не переподключают. SCAN возвращает BUSY поверх соединения/armed-window; повторный scan без них очищает **только RAM-кандидатов/выбор**, никогда не bond/settings. Bond storage: один peer, overwrite-oldest=n. Discovery и передача input остаются только после L2 encryption и точной проверки карты; Just Works pairing не обещает MITM-защиту.
+READ/STATUS разрешены при connection/bond и ничего не переподключают. UNBOND возвращает BUSY при активном соединении/armed-window, иначе OK и закрывает RAM-состояние; сам `bt_unpair` выполняется firmware вне USB-контекста и очищает bond для BT_ID_DEFAULT. SCAN возвращает BUSY поверх соединения/armed-window; повторный scan без них очищает **только RAM-кандидатов/выбор**, никогда не bond/settings. Bond storage: один peer, overwrite-oldest=n. Discovery и передача input остаются только после L2 encryption и точной проверки карты; Just Works pairing не обещает MITM-защиту.
 
 ## Реально выполнено / ещё не проверено
 
-- `python3 bridge/tools/test_native.py`: реальные native C executables с ASan+UBSan; transport regression + feature envelope/commands, пустые/wildcard/malformed команды, сосед раньше выбранной клавиатуры, exact address+type, one-attempt, deadlines, busy/bond gates и vendor descriptor — PASS.
+- `python3 bridge/tools/test_native.py`: реальные native C executables с ASan+UBSan; transport regression + feature envelope/commands, пустые/wildcard/malformed команды, сосед раньше выбранной клавиатуры, exact address+type, one-attempt, deadlines, busy/bond gates, explicit unbond (connected→BUSY, bonded→OK+closes state, address bytes→INVALID) и vendor descriptor — PASS.
 - `node bridge/tests/test_setup_ui.js`: реальные JS-тесты filters/encoding/response validation с **mocked** HID exchange — PASS; не browser/device test.
 - `python3 bridge/tools/build_candidate.py …`: реальная NCS2.9.3 / SDK0.17.0 / Arm GCC12.2.0 сборка, linked descriptors/config/HEX/UF2 verification — exit0. Хэш/память: `../docs/BRIDGE_DESIGN.md` и `build/verification.json`.
 - Старый UF2 сохранён в `archive/pre-usb-setup/`; `BUILD_FAILURES.md` и старый negative-GPIO build/log сохранены. Physical pairing path теперь вообще не реализован; включение Kconfig намеренно ломает build даже при alias. Никакой GPIO не выдуман.

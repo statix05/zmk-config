@@ -33,7 +33,9 @@ static atomic_t map_verified;
 static struct k_spinlock hid_lock;
 static struct setup_state setup;
 static struct k_spinlock setup_lock;
-static atomic_t conn_pending, have_bond;
+static atomic_t conn_pending, have_bond, auto_pairing;
+static bt_addr_le_t auto_target; /* exact-name auto-pair candidate in progress */
+static bool auto_name_match; /* valid for the advertisement being processed */
 static uint8_t feature_reply[SETUP_WIRE_SIZE];
 static bool target_allowed(const bt_addr_le_t *addr) {
     k_spinlock_key_t key = k_spin_lock(&setup_lock);
@@ -60,6 +62,14 @@ static bool is_bonded(const bt_addr_le_t *addr) {
     bt_foreach_bond(BT_ID_DEFAULT, bond_lookup_cb, &lookup);
     return lookup.found;
 }
+static void bond_count_cb(const struct bt_bond_info *info, void *user_data) {
+    ARG_UNUSED(info); ++*(unsigned *)user_data;
+}
+static bool any_bond(void) {
+    unsigned count = 0;
+    bt_foreach_bond(BT_ID_DEFAULT, bond_count_cb, &count);
+    return count != 0;
+}
 /* Called with hid_lock. A failed write keeps the item for periodic retry. */
 static void hid_pump(void) {
     if (!usb_configured || ep_in_flight || queue.head == queue.tail) return;
@@ -83,6 +93,14 @@ static void hid_in_ready(const struct device *dev) {
     k_spin_unlock(&hid_lock, key);
 }
 static const struct hid_ops hid_ops = { .int_in_ready = hid_in_ready };
+static void scan_restart(void);
+static void unbond_work_fn(struct k_work *work) {
+    ARG_UNUSED(work);
+    (void)bt_unpair(BT_ID_DEFAULT, NULL); /* clear the whole store for this ID */
+    atomic_clear(&have_bond);
+    scan_restart(); /* bond store empty: auto-pair may run again */
+}
+static K_WORK_DEFINE(unbond_work, unbond_work_fn);
 static int feature_set(const struct device *dev, struct usb_setup_packet *packet,
                        int32_t *len, uint8_t **data) {
     ARG_UNUSED(dev);
@@ -91,6 +109,10 @@ static int feature_set(const struct device *dev, struct usb_setup_packet *packet
     bool ok = setup_feature_set(&setup, k_uptime_get(), atomic_get(&conn_pending),
                                atomic_get(&have_bond), packet->wValue, packet->wLength,
                                *data, (size_t)*len);
+    /* op byte sits at data[2]; SETUP_OK at reply[3]. The unpair itself is
+     * deferred out of the USB callback context. */
+    if (ok && (*data)[2] == SETUP_UNBOND && setup.reply[3] == SETUP_OK)
+        k_work_submit(&unbond_work);
     k_spin_unlock(&setup_lock, key);
     return ok ? 0 : -EINVAL;
 }
@@ -150,25 +172,43 @@ static void try_connect(struct bt_scan_device_info *device_info, bool connectabl
     const bt_addr_le_t *addr = device_info->recv_info->addr;
     bool bonded = is_bonded(addr);
     if (!bonded) {
-        k_spinlock_key_t key = k_spin_lock(&setup_lock);
-        bool allowed = setup_claim(&setup, k_uptime_get(), addr->type, addr->a.val);
-        k_spin_unlock(&setup_lock, key);
+        bool allowed = false;
+        /* Auto-pair: ONLY when the store has zero bonds and the advertiser's
+         * exact complete name equals CONFIG_BRIDGE_PEER_NAME. The keyboard
+         * advertises this way only while a profile is in pairing mode, so a
+         * bare dongle in a USB port pairs by plugging, with no WebHID page.
+         * Any bond (even a foreign one) disables the path entirely. */
+        if (IS_ENABLED(CONFIG_BRIDGE_AUTO_PAIR) && !any_bond() && auto_name_match) {
+            atomic_set(&auto_pairing, 1);
+            auto_target = *addr;
+            allowed = true;
+        } else {
+            k_spinlock_key_t key = k_spin_lock(&setup_lock);
+            allowed = setup_claim(&setup, k_uptime_get(), addr->type, addr->a.val);
+            k_spin_unlock(&setup_lock, key);
+        }
         if (!allowed) return;
         /* Set bondable before create/security, never from the USB callback. */
         bt_set_bondable(true);
     }
-    if (bt_scan_stop()) { if (!bonded) setup_end(); return; }
+    if (bt_scan_stop()) {
+        if (!bonded) { atomic_clear(&auto_pairing); setup_end(); }
+        return;
+    }
     atomic_set(&conn_pending, 1);
     struct bt_conn *conn = NULL;
     int err = bt_conn_le_create(device_info->recv_info->addr, BT_CONN_LE_CREATE_CONN,
                                 BT_LE_CONN_PARAM(6, 24, 30, 400), &conn);
     if (!err) default_conn = conn; /* retain create's reference, released on disconnect */
-    else { atomic_clear(&conn_pending); if (!bonded) setup_end(); scan_restart(); }
+    else { atomic_clear(&conn_pending); if (!bonded) { atomic_clear(&auto_pairing); setup_end(); } scan_restart(); }
 }
 static bool candidate_name(struct bt_data *data, void *user_data) {
     struct setup_peer *peer = user_data;
     if (data->type == BT_DATA_NAME_COMPLETE || data->type == BT_DATA_NAME_SHORTENED) {
-        memcpy(peer->name, data->data, MIN(data->data_len, sizeof(peer->name)));
+        memcpy(peer->name, data->data, MIN(data->data_len, sizeof(peer->name) - 1));
+        peer->name[sizeof(peer->name) - 1] = '\0';
+        auto_name_match = IS_ENABLED(CONFIG_BRIDGE_AUTO_PAIR) &&
+            strcmp(peer->name, CONFIG_BRIDGE_PEER_NAME) == 0;
         return false;
     }
     return true;
@@ -180,6 +220,7 @@ static void scan_filter_match(struct bt_scan_device_info *device_info,
             struct setup_peer peer = { .type = device_info->recv_info->addr->type,
                                       .rssi = device_info->recv_info->rssi };
             memcpy(peer.addr, device_info->recv_info->addr->a.val, 6);
+            auto_name_match = false;
             bt_data_parse(device_info->adv_data, candidate_name, &peer);
             k_spinlock_key_t key = k_spin_lock(&setup_lock);
             setup_observe(&setup, k_uptime_get(), &peer);
@@ -227,7 +268,8 @@ static void connected(struct bt_conn *conn, uint8_t conn_err) {
         if (default_conn == conn) { bt_conn_unref(default_conn); default_conn = NULL; }
         atomic_clear(&conn_pending); setup_end(); scan_restart(); return;
     }
-    if (!is_bonded(bt_conn_get_dst(conn)) && !target_allowed(bt_conn_get_dst(conn))) {
+    if (!is_bonded(bt_conn_get_dst(conn)) && !target_allowed(bt_conn_get_dst(conn)) &&
+        !(atomic_get(&auto_pairing) && bt_addr_le_eq(bt_conn_get_dst(conn), &auto_target))) {
         (void)bt_conn_disconnect(conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN); return;
     }
     /* Do not force 2M; Sofle EXPERIMENTAL_CONN explicitly disables it.
@@ -243,7 +285,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason) {
     if (bt_hogp_assign_check(&hogp)) bt_hogp_release(&hogp);
     bt_conn_unref(default_conn);
     default_conn = NULL;
-    atomic_clear(&conn_pending); setup_end();
+    atomic_clear(&conn_pending); atomic_clear(&auto_pairing); setup_end();
     scan_restart(); /* keeps bonds; never unpair on RF/authentication failure */
 }
 static void security_changed(struct bt_conn *conn, bt_security_t level, enum bt_security_err err) {
@@ -268,12 +310,16 @@ static enum bt_security_err pairing_accept(struct bt_conn *conn,
     ARG_UNUSED(feat);
     /* Existing bonds may encrypt/reconnect, but SMP re-pair/replacement is denied. */
     return conn == default_conn && !is_bonded(bt_conn_get_dst(conn)) &&
-           target_allowed(bt_conn_get_dst(conn)) ? BT_SECURITY_ERR_SUCCESS : BT_SECURITY_ERR_PAIR_NOT_ALLOWED;
+           (target_allowed(bt_conn_get_dst(conn)) ||
+            (atomic_get(&auto_pairing) &&
+             bt_addr_le_eq(bt_conn_get_dst(conn), &auto_target)))
+        ? BT_SECURITY_ERR_SUCCESS : BT_SECURITY_ERR_PAIR_NOT_ALLOWED;
 }
 static const struct bt_conn_auth_cb auth_callbacks = { .pairing_accept = pairing_accept };
 static void pairing_complete(struct bt_conn *conn, bool bonded) {
     if (!bonded) { (void)bt_conn_disconnect(conn, BT_HCI_ERR_AUTH_FAIL); return; }
     atomic_set(&have_bond, 1);
+    atomic_clear(&auto_pairing);
     setup_end();
 }
 static struct bt_conn_auth_info_cb auth_info = { .pairing_complete = pairing_complete };
@@ -393,7 +439,7 @@ int main(void) {
     while (1) {
         k_spinlock_key_t sk = k_spin_lock(&setup_lock);
         setup_expire(&setup, k_uptime_get());
-        bool armed = setup.pair_until != 0;
+        bool armed = setup.pair_until != 0 || atomic_get(&auto_pairing);
         k_spin_unlock(&setup_lock, sk);
         if (!armed) {
             bt_set_bondable(false);

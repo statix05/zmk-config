@@ -8,3 +8,16 @@ config BRIDGE_PHYSICAL_PAIRING
       No GPIO or reset button is assumed. Keep disabled. The USB vendor feature
       interface provides explicit scan/select/exact-target first pairing.
       Enabling physical pairing deliberately fails compilation even with alias.
+config BRIDGE_AUTO_PAIR
+    bool "Auto-pair to the exact keyboard name while the bond store is empty"
+    default y
+    help
+      When the store has zero bonds, a connectable HID advertisement whose
+      complete local name equals BRIDGE_PEER_NAME is connected and bonded
+      automatically. The keyboard advertises this name only while a BT profile
+      is in pairing mode, so first pairing needs no WebHID page. Any existing
+      bond disables the path; re-pairing requires an explicit SETUP_UNBOND.
+config BRIDGE_PEER_NAME
+    string "Exact complete local name of the keyboard"
+    default "Sofle_Oled"
+    depends on BRIDGE_AUTO_PAIR

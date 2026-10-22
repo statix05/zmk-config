@@ -2,7 +2,7 @@
 'use strict';
 const BridgeSetup = (() => {
   const FILTER = Object.freeze({vendorId:0x2fe3, productId:0x0100, usagePage:0xff31, usage:0x74});
-  const errors = ['OK','Неверная команда','Соединение/окно уже активно','Сканирование истекло: начните заново','Адрес не наблюдался','Сначала выберите именно этот адрес','Bond уже есть: замена запрещена'];
+  const errors = ['OK','Неверная команда','Соединение/окно уже активно','Сканирование истекло: начните заново','Адрес не наблюдался','Сначала выберите именно этот адрес','Bond уже есть: замена запрещена (сначала UNBOND)'];
   function eligible(d) {
     return d.vendorId === FILTER.vendorId && d.productId === FILTER.productId &&
       d.collections.length === 1 && d.collections.every(c => c.usagePage === FILTER.usagePage &&
@@ -10,7 +10,7 @@ const BridgeSetup = (() => {
   }
   function address(p) { return [...p.addr].reverse().map(x=>x.toString(16).padStart(2,'0')).join(':').toUpperCase(); }
   function packet(op, peer=null, index=0) {
-    if (!Number.isInteger(op) || op<1 || op>5 || !Number.isInteger(index) || index<0 || index>255) throw Error('Invalid command');
+    if (!Number.isInteger(op) || op<1 || op>6 || !Number.isInteger(index) || index<0 || index>255) throw Error('Invalid command');
     const c = new Uint8Array(32); c[0]=1; c[1]=op; c[2]=index;
     if (op===3 || op===4) {
       if (!peer || ![0,1].includes(peer.type) || peer.addr.length!==6 ||
@@ -37,7 +37,7 @@ if(typeof document!=='undefined') {
   let device=null, selected=null, busy=false;
   function controls() {
     $('connect').disabled=busy || !!device;
-    for(const id of ['scan','refresh','status']) $(id).disabled=busy || !device;
+    for(const id of ['scan','refresh','status','unbond']) $(id).disabled=busy || !device;
     $('arm').disabled=busy || !device || !selected || !$('ack').checked;
     for(const b of $('peers').querySelectorAll('button')) b.disabled=busy;
   }
@@ -84,6 +84,11 @@ if(typeof document!=='undefined') {
   $('status').onclick=()=>action(async()=>{
     const s=await BridgeSetup.command(device,5);
     $('message').textContent=`State ${s.state}: scan=${!!(s.state&1)}, selected=${!!(s.state&2)}, armed=${!!(s.state&4)}, attempt=${!!(s.state&8)}, bond=${!!(s.state&16)}, connection=${!!(s.state&32)}. Закрытое окно само по себе НЕ доказывает успешный bond.`;
+  });
+  $('unbond').onclick=()=>action(async()=>{
+    if(!window.confirm('Стереть bond донгла? Клавиатура не сможет передавать через этот донгл, пока вы не сопряжёте их заново (BT_SEL 3 на клавиатуре — донгл найдёт её сам).')) return;
+    await BridgeSetup.command(device,6);
+    $('message').textContent='Bond стёрт. Переведите клавиатуру в режим pairing (BT_SEL 3) — донгл сопряжётся автоматически.';
   });
   if(navigator.hid) navigator.hid.addEventListener('disconnect',e=>{
     if(e.device===device) { device=null; selected=null; $('ack').checked=false; controls(); $('message').textContent='USB отключён: разрешение pairing закрыто firmware.'; }

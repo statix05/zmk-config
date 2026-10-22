@@ -3,7 +3,9 @@
 **Кандидат, не разрешён к прошивке. Hardware не тестировался.**
 Полный аудит/ограничения: [`../docs/BRIDGE_DESIGN.md`](../docs/BRIDGE_DESIGN.md), происхождение: [`UPSTREAM.md`](UPSTREAM.md).
 
-Безопасный default: `BRIDGE_PHYSICAL_PAIRING=n`, пустой NVS **не** включает pairing. Ни GPIO, ни reset/switch, ни battery/OLED/matrix не придуманы. Первое сопряжение разрешается только явными USB-командами scan → выбор точного BLE address+type → ARM на 20 с; отдельный vendor HID интерфейс и минимальная WebHID-страница: [`PAIRING.md`](PAIRING.md), [`pairing/index.html`](pairing/index.html). Автоподключение к первому/случайному HID запрещено. После сохранения bond страница не нужна для обычного ввода. USB/BLE/WebHID на железе пока НЕ проверены.
+Безопасный default: `BRIDGE_PHYSICAL_PAIRING=n`, ни GPIO, ни battery/OLED/matrix не придуманы.
+
+**Сопряжение v2 (`BRIDGE_AUTO_PAIR=y`, default):** при **пустом** bond-хранилище донгл сам находит connectable HID-объявление с точным именем `BRIDGE_PEER_NAME` (`Sofle_Oled`) и бондится — WebHID-страница для первого сопряжения не нужна (клавиатура так рекламируется только в режиме pairing: BT_SEL 3). Повторное сопряжение: кнопка **«Разорвать связь»** на странице (команда `SETUP_UNBOND`), затем снова BT_SEL 3. Ручной путь scan → точный адрес+type → ARM 20 с сохранён для спорных случаев. Любой существующий bond отключает автопаринг; ничего не очищается неявно. Детали и риски: [`PAIRING.md`](PAIRING.md), страница [`pairing/index.html`](pairing/index.html). USB/BLE/WebHID на железе пока НЕ проверены.
 
 Проверки и candidate build (только файлы на компьютере):
 

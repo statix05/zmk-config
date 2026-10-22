@@ -76,7 +76,7 @@ bool setup_feature_set(struct setup_state *s, uint64_t now, bool connected, bool
     uint8_t op=c[1], status=SETUP_OK, index=c[2];
     const struct setup_peer *peer=NULL;
     bool target_op=op==SETUP_SELECT || op==SETUP_ARM;
-    bool valid=c[0]==SETUP_VERSION && op>=SETUP_SCAN && op<=SETUP_STATUS;
+    bool valid=c[0]==SETUP_VERSION && op>=SETUP_SCAN && op<=SETUP_UNBOND;
     for (unsigned i=10;i<SETUP_BODY_SIZE;++i) if(c[i]) valid=false;
     if (op!=SETUP_READ && index) valid=false;
     if (target_op) { if (!address_valid(c[3],c+4)) valid=false; }
@@ -89,7 +89,11 @@ bool setup_feature_set(struct setup_state *s, uint64_t now, bool connected, bool
     } else if (connected || s->pair_until) status=SETUP_BUSY;
     else if (op==SETUP_SCAN) {
         setup_close(s); s->count=0; s->scan_until=now+SETUP_SCAN_MS;
-    } else if (bonded) status=SETUP_BONDED; /* no replacement, no overwrite/clear */
+    } else if (op==SETUP_UNBOND) {
+        /* Clearing the store is explicit, never implicit; the caller performs
+         * the Bluetooth unpair outside this pure-logic module. */
+        setup_close(s); status=SETUP_OK;
+    } else if (bonded) status=SETUP_BONDED; /* no replacement, no overwrite */
     else if (!s->scan_until) status=SETUP_EXPIRED;
     else if (op==SETUP_SELECT) {
         unsigned i;

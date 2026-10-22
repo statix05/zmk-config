@@ -11,7 +11,8 @@
 #define SETUP_SCAN_MS 30000
 #define SETUP_PAIR_MS 20000
 /* Fixed wire schema documented in ../PAIRING.md. Addresses are BLE little endian. */
-enum setup_op { SETUP_SCAN=1, SETUP_READ=2, SETUP_SELECT=3, SETUP_ARM=4, SETUP_STATUS=5 };
+enum setup_op { SETUP_SCAN=1, SETUP_READ=2, SETUP_SELECT=3, SETUP_ARM=4, SETUP_STATUS=5,
+                SETUP_UNBOND=6 };
 enum setup_status { SETUP_OK, SETUP_INVALID, SETUP_BUSY, SETUP_EXPIRED, SETUP_NOT_SEEN, SETUP_NOT_SELECTED, SETUP_BONDED };
 struct setup_peer { uint8_t type, addr[6]; int8_t rssi; char name[18]; };
 struct setup_state {

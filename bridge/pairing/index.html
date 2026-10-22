@@ -1,16 +1,18 @@
 <!doctype html>
 <html lang="ru"><meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-<title>Sofle bridge — явное первое сопряжение</title>
-<h1>Sofle bridge: первое сопряжение</h1>
+<title>Sofle bridge — сопряжение и сброс связи</title>
+<h1>Sofle bridge: сопряжение и сброс связи</h1>
 <p><strong>NOT APPROVED: USB/BLE/WebHID на устройстве ещё не проверены. Эта страница не прошивает устройство.</strong></p>
 <p>Обычный ввод после сохранения bond не требует этой страницы, приложения или Bluetooth-настроек ОС. Страница управляет только отдельным vendor HID интерфейсом bridge, не ZMK Studio.</p>
-<p>Выберите на Sofle профиль DONGLE (BT_SEL 4). Не очищайте рабочие профили Mac 0/1. Имя и RSSI не доказывают личность клавиатуры; BLE-адрес также может быть подделан. Для проверки выключите/включите именно целевую клавиатуру и сравните объявления. Just Works не защищён от активного MITM. При сомнении остановитесь.</p>
+<p><strong>Обычно страница не нужна</strong>: с пустым bond-хранилищем донгл сам находит клавиатуру по имени, когда та в режиме pairing (BT_SEL 3). Страница нужна только чтобы <em>разорвать связь</em> (кнопка ниже) или для ручного выбора точного адреса.</p>
+<p>Выберите на Sofle профиль DONGLE (BT_SEL 3). Имя и RSSI не доказывают личность клавиатуры; BLE-адрес также может быть подделан. Just Works не защищён от активного MITM. При сомнении остановитесь.</p>
 <ol><li>Открыть USB bridge (только VID 2FE3 / PID 0100, vendor usage FF31/74).</li><li>Нажать «Сканировать». В течение 30 секунд обновить список HID-объявлений.</li><li>Выбрать точный адрес + тип. Выбор ещё не разрешает pairing.</li><li>Проверить адрес, подтвердить риск и отдельно разрешить единственную попытку на 20 секунд.</li></ol>
 <button id="connect">Открыть USB bridge</button>
 <button id="scan" disabled>Сканировать 30 с</button>
 <button id="refresh" disabled>Обновить объявления</button>
 <button id="status" disabled>Состояние</button>
+<button id="unbond" disabled>Разорвать связь (стереть bond)</button>
 <table><thead><tr><th>Адрес BLE</th><th>Тип</th><th>RSSI</th><th>Недостоверное имя</th><th>Выбор</th></tr></thead><tbody id="peers"></tbody></table>
 <p id="target">Цель не выбрана</p>
 <label><input id="ack" type="checkbox">Я отдельно проверил целевую клавиатуру; имя не удостоверяет личность, Just Works допускает MITM.</label>

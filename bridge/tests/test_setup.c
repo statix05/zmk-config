@@ -33,7 +33,7 @@ int main(void) {
     cmd[0]=1; assert(!setup_feature_set(&s,1,0,0,0x0340,33,cmd,33));
     for(unsigned op=0;op<256;++op) {
         struct setup_state fresh={0}; make((uint8_t)op,NULL);
-        if(op==SETUP_SCAN || op==SETUP_READ || op==SETUP_STATUS) continue;
+        if(op==SETUP_SCAN || op==SETUP_READ || op==SETUP_STATUS || op==SETUP_UNBOND) continue;
         assert(run(&fresh,1,0,0)==SETUP_INVALID);
         assert(!fresh.pair_until);
     }
@@ -87,6 +87,20 @@ int main(void) {
     for(unsigned i=0;i<255;++i) { b.addr[0]=(uint8_t)i; setup_observe(&s,401,&b); }
     assert(s.count==SETUP_MAX_CANDIDATES);
     make(SETUP_SELECT,&a); assert(run(&s,30400,0,0)==SETUP_EXPIRED);
+    /* UNBOND: rejected while connected, allowed otherwise; address bytes must
+     * stay zero (non-target op); closes any armed/selected state. */
+    make(SETUP_UNBOND,NULL); cmd[4]=1; assert(run(&s,306,0,0)==SETUP_INVALID);
+    make(SETUP_UNBOND,NULL); assert(run(&s,306,1,0)==SETUP_BUSY);
+    /* bonded but not connected: clearing the store is exactly the point */
+    make(SETUP_UNBOND,NULL); assert(run(&s,306,0,1)==SETUP_OK);
+    assert(!s.scan_until && !s.pair_until && !s.selected); /* count kept by close() */
+    memset(&s,0,sizeof(s)); make(SETUP_SCAN,NULL); assert(run(&s,310,0,0)==SETUP_OK);
+    setup_observe(&s,311,&a); make(SETUP_SELECT,&a); assert(run(&s,312,0,0)==SETUP_OK);
+    make(SETUP_ARM,&a); assert(run(&s,313,0,0)==SETUP_OK);
+    make(SETUP_UNBOND,NULL); assert(run(&s,314,0,0)==SETUP_BUSY); /* armed window */
+    setup_expire(&s,20314); /* ARM deadline (20000 ms from t=313) passes */
+    make(SETUP_UNBOND,NULL); assert(run(&s,315,0,0)==SETUP_OK);
+    assert(!s.scan_until && !s.pair_until && !s.selected);
     /* Independently walk the vendor descriptor: one TLC, only feature64/body32. */
     unsigned page=0,id=0,size=0,count=0,bits=0,tlc=0;
     for(size_t i=0;i<sizeof(setup_report_desc);) {
@@ -104,5 +118,5 @@ int main(void) {
         }
     }
     assert(tlc==1 && bits==256);
-    puts("PASS: setup feature envelope/type/ID/size/version/reserved/op validation, wildcard rejection, scan dedupe/capacity, exact address+type selection, busy/bond gate, one attempt, hard deadline, expiry/USB close, isolated vendor descriptor");
+    puts("PASS: setup feature envelope/type/ID/size/version/reserved/op validation, wildcard rejection, scan dedupe/capacity, exact address+type selection, busy/bond gate, one attempt, hard deadline, expiry/USB close, explicit unbond, isolated vendor descriptor");
 }
