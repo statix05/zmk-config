@@ -1,82 +1,32 @@
 ---
+# Sofle clean-slate build (feat/sofle-clean): left half = BLE central with
+# 5 profiles (0/1/2 = Macs, 3 = USB bridge dongle, 4 spare), right half =
+# plain split peripheral. Stock ZMK status screens, full DYA stack on the
+# central, Studio over USB. Deep sleep disabled everywhere (zmk#718/#2408).
+# No dongle-central / ESB targets on this branch: the dongle runs the
+# standalone bridge firmware (BLE HID host -> USB), not a split central.
 include:
-  # Same split roles and firmware work directly with Macs or the optional HID bridge.
-  # Deep sleep DISABLED on both halves (-DCONFIG_ZMK_SLEEP=n overrides
-  # sofle.conf): ZMK deep sleep is sys_poweroff (RAM wiped, cold reboot on
-  # wake), sleep timers are NOT synced between halves (zmk#2408), and a
-  # woken peripheral often fails to re-establish the split link (zmk#718,
-  # #2904). This caused the "right half dead until power cycle" symptom and
-  # also wiped unsaved Studio edits. With sleep off the halves stay paired
-  # permanently; turn the power switch off for long storage instead.
-  # Left (central) radio-tuning iteration 3: the nRF52840 radio on the left
-  # half time-shares three links at once (split 7.5ms + dongle HID + Studio
-  # BLE advertising) on Zephyr's legacy LL, which jitters and queues key
-  # events from the right half. Changes, both left-only:
-  #  - Studio BLE transport OFF (DYA runs over USB per README; removes
-  #    always-unlocked BLE advertising/service load), UART transport stays.
-  #  - Host-link PPCP widened to 10-30ms interval so the dongle link stops
-  #    asking for 7.5ms events; right-half split link params untouched.
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_left
     artifact-name: sofle_left_release
     snippet: studio-rpc-usb-uart sofle-dya-central sofle-release
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_STUDIO_TRANSPORT_BLE=n -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_BT_PERIPHERAL_PREF_MIN_INT=8 -DCONFIG_BT_PERIPHERAL_PREF_MAX_INT=24
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_STUDIO_TRANSPORT_BLE=n -DCONFIG_BT_PERIPHERAL_PREF_MIN_INT=8 -DCONFIG_BT_PERIPHERAL_PREF_MAX_INT=24 -DCONFIG_ZMK_BEHAVIOR_OLED_TOGGLE=n
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_right
     artifact-name: sofle_right_release
     snippet: sofle-release
-    cmake-args: -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_PRINTK=n -DCONFIG_CONSOLE=n -DCONFIG_BOOT_BANNER=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
+    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_BEHAVIOR_OLED_TOGGLE=n
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_left
     artifact-name: sofle_left_debug
     snippet: studio-rpc-usb-uart sofle-dya-central zmk-usb-logging sofle-debug
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_STUDIO_TRANSPORT_BLE=n -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_BT_PERIPHERAL_PREF_MIN_INT=8 -DCONFIG_BT_PERIPHERAL_PREF_MAX_INT=24
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Oled\" -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_STUDIO_TRANSPORT_BLE=n -DCONFIG_BT_PERIPHERAL_PREF_MIN_INT=8 -DCONFIG_BT_PERIPHERAL_PREF_MAX_INT=24 -DCONFIG_ZMK_BEHAVIOR_OLED_TOGGLE=n
   - board: nice_nano@2.0.0/nrf52840/zmk
     shield: sofle_right
     artifact-name: sofle_right_debug
     snippet: zmk-usb-logging sofle-debug
-    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n
-  # ---- Dongle-as-central architecture (official upstream approach) ----
-  # The dongle (third nRF52840) is the split CENTRAL. Both halves are BLE
-  # peripherals that talk ONLY to the dongle over the split protocol; the
-  # dongle re-emits USB HID to the PC. This removes the left half's
-  # multi-link radio contention entirely and is how upstream dongle builds
-  # (mctechnology17 sofle_dongle_*) are designed to work.
-  # Minimal keymap on the dongle: no DYA runtime modules, no custom
-  # behaviors (sofle_dongle_pro_micro.keymap) — fewer reconnect paths.
-  # Deep sleep stays off everywhere for the same split-reconnect reasons.
+    cmake-args: -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_BEHAVIOR_OLED_TOGGLE=n
   - board: nice_nano@2.0.0/nrf52840/zmk
-    shield: sofle_dongle_pro_micro
-    artifact-name: sofle_dongle_central_release
-    snippet: sofle-release
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Dongle\" -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_PRINTK=n -DCONFIG_CONSOLE=n -DCONFIG_BOOT_BANNER=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
-  - board: nice_nano@2.0.0/nrf52840/zmk
-    shield: sofle_left_peripheral
-    artifact-name: sofle_left_peripheral_release
-    snippet: sofle-release
-    cmake-args: -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_PRINTK=n -DCONFIG_CONSOLE=n -DCONFIG_BOOT_BANNER=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
-  - board: nice_nano@2.0.0/nrf52840/zmk
-    shield: sofle_right
-    artifact-name: sofle_right_peripheral_release
-    snippet: sofle-release
-    cmake-args: -DCONFIG_NRF_SECURITY=n -DCONFIG_MBEDTLS_LIBRARY_NRF_SECURITY=n -DCONFIG_PRINTK=n -DCONFIG_CONSOLE=n -DCONFIG_BOOT_BANNER=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_SLEEP=n
-  # ---- ESB 2.4 GHz dongle variant (badjeff/zmk-feature-split-esb) ----
-  # Dongle is a USB HID central; halves talk to it over Enhanced ShockBurst.
-  # ESB conf is passed via cmake-args (snippet sofle-esb also available);
-  # the shared esb_split address node comes from config/sofle-esb-overlay.dtsi
-  # included by the keymaps. BLE and Studio are OFF in these targets.
-  - board: nice_nano@2.0.0/nrf52840/zmk
-    shield: sofle_dongle_pro_micro
-    artifact-name: sofle_dongle_esb_release
-    snippet: sofle-release
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_Dongle\" -DCONFIG_ZMK_BLE=n -DCONFIG_ZMK_SPLIT_BLE=n -DCONFIG_ZMK_SPLIT_WIRED=n -DCONFIG_ZMK_SPLIT_ESB=y -DCONFIG_ZMK_SPLIT_ESB_PERIPHERAL_COUNT=2 -DCONFIG_MPSL_TIMESLOT_SESSION_COUNT=1 -DCONFIG_SYSTEM_WORKQUEUE_STACK_SIZE=4096 -DCONFIG_ESB_MAX_PAYLOAD_LENGTH=48 -DCONFIG_ESB_TX_FIFO_SIZE=1 -DCONFIG_INPUT_THREAD_STACK_SIZE=4096 -DCONFIG_INPUT_QUEUE_MAX_MSGS=256 -DCONFIG_MAIN_STACK_SIZE=4096 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000
-  - board: nice_nano@2.0.0/nrf52840/zmk
-    shield: sofle_left_peripheral
-    artifact-name: sofle_left_esb_release
-    snippet: sofle-release
-    cmake-args: -DCONFIG_ZMK_BLE=n -DCONFIG_ZMK_SPLIT_BLE=n -DCONFIG_ZMK_SPLIT_WIRED=n -DCONFIG_ZMK_SPLIT_ESB=y -DCONFIG_ZMK_SPLIT_ESB_PERIPHERAL_ID=1 -DCONFIG_MPSL_TIMESLOT_SESSION_COUNT=1 -DCONFIG_SYSTEM_WORKQUEUE_STACK_SIZE=4096 -DCONFIG_ESB_MAX_PAYLOAD_LENGTH=48 -DCONFIG_ESB_TX_FIFO_SIZE=1 -DCONFIG_INPUT_THREAD_STACK_SIZE=4096 -DCONFIG_INPUT_QUEUE_MAX_MSGS=256 -DCONFIG_MAIN_STACK_SIZE=4096 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000
-  - board: nice_nano@2.0.0/nrf52840/zmk
-    shield: sofle_right
-    artifact-name: sofle_right_esb_release
-    snippet: sofle-release
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Sofle_ESB\" -DCONFIG_ZMK_BLE=n -DCONFIG_ZMK_SPLIT_BLE=n -DCONFIG_ZMK_SPLIT_WIRED=n -DCONFIG_ZMK_SPLIT_ESB=y -DCONFIG_ZMK_SPLIT_ESB_PERIPHERAL_ID=2 -DCONFIG_MPSL_TIMESLOT_SESSION_COUNT=1 -DCONFIG_SYSTEM_WORKQUEUE_STACK_SIZE=4096 -DCONFIG_ESB_MAX_PAYLOAD_LENGTH=48 -DCONFIG_ESB_TX_FIFO_SIZE=1 -DCONFIG_INPUT_THREAD_STACK_SIZE=4096 -DCONFIG_INPUT_QUEUE_MAX_MSGS=256 -DCONFIG_MAIN_STACK_SIZE=4096 -DCONFIG_ZMK_SLEEP=n -DCONFIG_ZMK_IDLE_TIMEOUT=60000
+    shield: settings_reset
+    artifact-name: settings_reset
+    cmake-args: -DCONFIG_ZMK_BEHAVIOR_OLED_TOGGLE=n
